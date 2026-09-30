@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Matika</title>
+<link rel="stylesheet" href="shared/core.css">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#4a3aa7">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+  header.hero { padding: 32px 16px 8px; max-width: 1040px; margin: 0 auto; }
+  header.hero p { color: var(--ink-2); max-width: 60ch; }
+  section { margin-bottom: 24px; }
+  .profiles { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .profile { display: inline-flex; align-items: center; }
+  .profile .chip { font-size: 1.1rem; padding: 10px 20px; }
+  .profile .x { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 1.1rem; padding: 6px 8px; }
+  .add-form { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .apps { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+  .app {
+    display: block; text-decoration: none; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 20px; min-height: 150px;
+  }
+  a.app:hover { border-color: var(--accent); }
+  .app .ico { font-size: 1.9rem; font-weight: 700; color: var(--accent); letter-spacing: -.02em; }
+  .app h3 { margin: 8px 0 4px; font-size: 1.15rem; }
+  .app p { color: var(--ink-2); margin: 0; font-size: .95rem; }
+  .app.soon { opacity: .55; border-style: dashed; box-shadow: none; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .note { font-size: .9rem; color: var(--muted); margin-top: 10px; }
+  .sync-form { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+  .sync-form input { max-width: none; flex: 1 1 280px; }
+  .status { margin: 8px 0 12px; }
+  .status.err { color: var(--bad-ink); }
+  .steps { color: var(--ink-2); padding-left: 1.2em; margin: 8px 0; }
+  .steps li { margin: 6px 0; }
+  details summary { cursor: pointer; font-weight: 600; margin-top: 8px; }
+  pre.code { background: var(--surface-2); border-radius: 10px; padding: 12px; max-height: 260px; overflow: auto; font-size: .78rem; }
+</style>
+</head>
+<body>
+<header class="hero">
+  <h1 data-i18n="hub.title">Matika</h1>
+  <p data-i18n="hub.lead"></p>
+</header>
+
+<main class="wrap">
+  <section class="card">
+    <h2 data-i18n="hub.who"></h2>
+    <div class="profiles" id="profiles"></div>
+    <form class="add-form" id="addForm">
+      <input type="text" id="newName" maxlength="24" autocomplete="off">
+      <button class="btn" type="submit" data-i18n="hub.add"></button>
+    </form>
+  </section>
+
+  <section>
+    <h2 data-i18n="hub.apps"></h2>
+    <div class="apps" id="apps"></div>
+  </section>
+
+  <section class="card">
+    <h2 data-i18n="sync.title"></h2>
+    <div id="syncBody"></div>
+  </section>
+
+  <section class="card">
+    <h2 data-i18n="hub.data"></h2>
+    <p class="muted" data-i18n="hub.dataLead"></p>
+    <div class="row">
+      <button class="btn" id="export" data-i18n="hub.export"></button>
+      <button class="btn" id="importBtn" data-i18n="hub.import"></button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+      <span style="flex:1"></span>
+      <button class="btn ghost" id="lang"></button>
+    </div>
+    <p class="note" id="msg" aria-live="polite"></p>
+  </section>
+</main>
+
+<script src="shared/core.js"></script>
+<script>
+(() => {
+  const M = Matika;
+  M.addStrings({
+    cs: {
+      'hub.title': 'Matika',
+      'hub.lead': 'Malé aplikace na procvičování. Každá si pamatuje, co už jde samo a co je potřeba ještě trénovat – zvlášť pro každé dítě.',
+      'hub.who': 'Kdo bude počítat?',
+      'hub.add': 'Přidat',
+      'hub.namePh': 'Jméno',
+      'hub.remove': 'Smazat profil {name} a všechny jeho výsledky? Nejde to vrátit.',
+      'hub.noProfile': 'Nejdřív přidej jméno.',
+      'hub.apps': 'Aplikace',
+      'hub.soon': 'připravujeme',
+      'app.nasobilka': 'Násobilka',
+      'app.nasobilka.d': 'Co už umím? Mapa malé násobilky 1–10: co jde samo, co je pomalé a kde vznikají chyby.',
+      'app.more': 'Další aplikace',
+      'app.more.d': 'Sčítání a odčítání zpaměti, dělení, zlomky, slovní úlohy…',
+      'hub.data': 'Data',
+      'hub.dataLead': 'Výsledky se ukládají jen v tomhle prohlížeči na tomhle zařízení. Zálohu si stáhni do souboru; ze souboru ji jde obnovit i na jiném zařízení.',
+      'hub.export': 'Stáhnout zálohu',
+      'hub.import': 'Obnovit ze zálohy',
+      'hub.importConfirm': 'Obnovení nahradí všechna současná data v tomhle prohlížeči. Pokračovat?',
+      'hub.imported': 'Záloha obnovena.',
+      'hub.importFail': 'Tohle není záloha z Matiky.',
+      'hub.lang': 'English',
+      'sync.title': 'Posílání výsledků do Google tabulky',
+      'sync.lead': 'Po každém kole se výsledky pošlou do tvé Google tabulky. Každé zařízení se stejným odkazem (třeba telefon rodiče) si z ní stáhne všechny děti a jejich mapy.',
+      'sync.url': 'Odkaz na skript (Web app URL, končí /exec)',
+      'sync.save': 'Připojit',
+      'sync.howto': 'Jak tabulku připravit (jednou, asi 10 minut)',
+      'sync.step1': 'Na drive.google.com založ novou Google tabulku, třeba „Matika – výsledky“.',
+      'sync.step2': 'V tabulce: Rozšíření → Apps Script. Smaž, co tam je, a vlož skript níže. Ulož (ikona diskety).',
+      'sync.step3': 'Vpravo nahoře Nasadit → Nové nasazení → ozubené kolo → Webová aplikace. Spustit jako: Já. Kdo má přístup: Kdokoli. Nasadit.',
+      'sync.step4': 'Google se zeptá na oprávnění – povol je (u „aplikace není ověřená“ klikni Rozšířené → Přejít na…). Je to tvůj vlastní skript.',
+      'sync.step5': 'Zkopíruj „Adresu URL webové aplikace“ a vlož ji sem.',
+      'sync.script': 'Skript',
+      'sync.copyScript': 'Zkopírovat skript',
+      'sync.ok': 'Připojeno ke Google tabulce.',
+      'sync.last': 'Naposledy synchronizováno {when}.',
+      'sync.never': 'Zatím nesynchronizováno.',
+      'sync.busy': 'Synchronizuji…',
+      'sync.err': 'Poslední pokus selhal ({e}). Zkusí se znovu po dalším kole – bez internetu se nic neztratí.',
+      'sync.now': 'Synchronizovat teď',
+      'sync.link': 'Zkopírovat odkaz pro další zařízení',
+      'sync.linkNote': 'Pošli odkaz na druhý telefon (třeba přes WhatsApp) a otevři ho v Chromu – zařízení se připojí samo. S odkazem jde výsledky číst, sdílej ho jen v rodině.',
+      'sync.copied': 'Zkopírováno.',
+      'sync.off': 'Odpojit',
+      'sync.offConfirm': 'Odpojit toto zařízení? Data zůstanou tady i v tabulce, jen se přestanou posílat.',
+      'sync.linked': 'Zařízení je připojené – výsledky se budou posílat do tabulky.',
+    },
+    en: {
+      'hub.title': 'Maths',
+      'hub.lead': 'Small practice apps. Each one remembers what is already automatic and what still needs practice – separately for each child.',
+      'hub.who': 'Who is practising?',
+      'hub.add': 'Add',
+      'hub.namePh': 'Name',
+      'hub.remove': 'Delete profile {name} and all of its results? This cannot be undone.',
+      'hub.noProfile': 'Add a name first.',
+      'hub.apps': 'Apps',
+      'hub.soon': 'coming later',
+      'app.nasobilka': 'Times tables',
+      'app.nasobilka.d': 'What do I know? A map of the 1–10 times tables: what is automatic, what is slow and where mistakes happen.',
+      'app.more': 'More apps',
+      'app.more.d': 'Mental addition and subtraction, division, fractions, word problems…',
+      'hub.data': 'Data',
+      'hub.dataLead': 'Results are stored only in this browser on this device. Download a backup file; it can be restored here or on another device.',
+      'hub.export': 'Download backup',
+      'hub.import': 'Restore from backup',
+      'hub.importConfirm': 'Restoring replaces all current data in this browser. Continue?',
+      'hub.imported': 'Backup restored.',
+      'hub.importFail': 'This is not a Matika backup.',
+      'hub.lang': 'Čeština',
+      'sync.title': 'Sending results to a Google Sheet',
+      'sync.lead': 'After every round the results are sent to your Google Sheet. Any device with the same link (e.g. a parent\'s phone) pulls all children and their maps from it.',
+      'sync.url': 'Script link (Web app URL, ends with /exec)',
+      'sync.save': 'Connect',
+      'sync.howto': 'How to prepare the sheet (once, about 10 minutes)',
+      'sync.step1': 'At drive.google.com create a new Google Sheet, e.g. "Matika – results".',
+      'sync.step2': 'In the sheet: Extensions → Apps Script. Delete what is there, paste the script below, save.',
+      'sync.step3': 'Top right: Deploy → New deployment → gear icon → Web app. Execute as: Me. Who has access: Anyone. Deploy.',
+      'sync.step4': 'Google asks for permission – allow it (on "app isn\'t verified" click Advanced → Go to…). It is your own script.',
+      'sync.step5': 'Copy the "Web app URL" and paste it here.',
+      'sync.script': 'Script',
+      'sync.copyScript': 'Copy script',
+      'sync.ok': 'Connected to a Google Sheet.',
+      'sync.last': 'Last synced {when}.',
+      'sync.never': 'Not synced yet.',
+      'sync.busy': 'Syncing…',
+      'sync.err': 'The last attempt failed ({e}). It retries after the next round – nothing is lost offline.',
+      'sync.now': 'Sync now',
+      'sync.link': 'Copy link for another device',
+      'sync.linkNote': 'Send the link to the other phone (e.g. via WhatsApp) and open it in Chrome – the device connects itself. The link lets anyone read the results, so share it only within the family.',
+      'sync.copied': 'Copied.',
+      'sync.off': 'Disconnect',
+      'sync.offConfirm': 'Disconnect this device? Data stays here and in the sheet, it just stops being sent.',
+      'sync.linked': 'This device is connected – results will be sent to the sheet.',
+    },
+  });
+
+  const APPS = [
+    { href: 'nasobilka/index.html', ico: '7·8', key: 'nasobilka' },
+    { ico: '+ − ÷', key: 'more', soon: true },
+  ];
+
+  const $ = id => document.getElementById(id);
+  const msg = text => { $('msg').textContent = text; };
+
+  function render() {
+    M.applyI18n();
+    const t = M.t;
+    $('newName').placeholder = t('hub.namePh');
+    $('lang').textContent = t('hub.lang');
+
+    const cur = M.current();
+    $('profiles').innerHTML = M.profiles().map(p => `
+      <span class="profile">
+        <button class="chip" data-id="${p.id}" aria-pressed="${cur?.id === p.id}">${M.esc(p.name)}</button>
+        <button class="x" data-remove="${p.id}" aria-label="${M.esc(t('hub.remove', { name: p.name }))}">×</button>
+      </span>`).join('');
+
+    $('apps').innerHTML = APPS.map(a => {
+      const body = `<div class="ico">${a.ico}</div><h3>${t('app.' + a.key)}</h3><p>${t('app.' + a.key + '.d')}</p>`;
+      return a.soon
+        ? `<div class="app soon">${body}<p class="small muted" style="margin-top:8px">${t('hub.soon')}</p></div>`
+        : `<a class="app" href="${a.href}" data-app>${body}</a>`;
+    }).join('');
+    renderSync();
+  }
+
+  const copy = async (text, btn) => {
+    try { await navigator.clipboard.writeText(text); btn.textContent = M.t('sync.copied'); }
+    catch { prompt('', text); }
+  };
+
+  function renderSync(busy = false) {
+    const t = M.t;
+    const cfg = M.syncConfig();
+    if (!cfg) {
+      $('syncBody').innerHTML = `
+        <p class="muted">${t('sync.lead')}</p>
+        <form class="sync-form" id="syncForm">
+          <input type="url" id="syncUrl" placeholder="https://script.google.com/macros/s/…/exec" aria-label="${t('sync.url')}" required>
+          <button class="btn primary" type="submit">${t('sync.save')}</button>
+        </form>
+        <details id="howto"><summary>${t('sync.howto')}</summary>
+          <ol class="steps">${[1, 2, 3, 4, 5].map(i => `<li>${t('sync.step' + i)}</li>`).join('')}</ol>
+          <div class="row"><strong>${t('sync.script')}</strong><button class="btn" id="copyScript" type="button">${t('sync.copyScript')}</button></div>
+          <pre class="code" id="script"></pre>
+        </details>`;
+      $('syncForm').onsubmit = e => {
+        e.preventDefault();
+        M.setSyncConfig({ url: $('syncUrl').value.trim() });
+        runSync();
+      };
+      $('howto').ontoggle = async () => {
+        if ($('script').textContent) return;
+        try { $('script').textContent = await (await fetch('sheets/Code.gs')).text(); } catch { /* offline */ }
+      };
+      $('copyScript').onclick = e => copy($('script').textContent, e.target);
+      return;
+    }
+    const when = cfg.last && new Date(cfg.last).toLocaleString(M.lang() === 'cs' ? 'cs-CZ' : 'en-GB',
+      { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
+    $('syncBody').innerHTML = `
+      <p class="status">${t('sync.ok')} ${busy ? t('sync.busy') : when ? t('sync.last', { when }) : t('sync.never')}</p>
+      ${cfg.error && !busy ? `<p class="status err">${t('sync.err', { e: M.esc(cfg.error) })}</p>` : ''}
+      <div class="row">
+        <button class="btn" id="syncNow" ${busy ? 'disabled' : ''}>${t('sync.now')}</button>
+        <button class="btn" id="syncLink">${t('sync.link')}</button>
+        <button class="btn ghost danger" id="syncOff">${t('sync.off')}</button>
+      </div>
+      <p class="note">${t('sync.linkNote')}</p>`;
+    $('syncNow').onclick = runSync;
+    $('syncLink').onclick = e => copy(M.setupLink(), e.target);
+    $('syncOff').onclick = () => { if (confirm(t('sync.offConfirm'))) { M.setSyncConfig(null); renderSync(); } };
+  }
+
+  async function runSync() {
+    renderSync(true);
+    await M.sync();
+    render();
+  }
+
+  $('profiles').addEventListener('click', e => {
+    const pick = e.target.closest('[data-id]');
+    const del = e.target.closest('[data-remove]');
+    if (pick) { M.setCurrent(pick.dataset.id); render(); }
+    if (del) {
+      const p = M.profiles().find(x => x.id === del.dataset.remove);
+      if (p && confirm(M.t('hub.remove', { name: p.name }))) { M.removeProfile(p.id); render(); }
+    }
+  });
+
+  $('addForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = $('newName').value.trim();
+    if (!name) return;
+    M.addProfile(name);
+    $('newName').value = '';
+    render();
+  });
+
+  $('apps').addEventListener('click', e => {
+    if (e.target.closest('[data-app]') && !M.current()) {
+      e.preventDefault();
+      msg('');
+      $('newName').focus();
+      alert(M.t('hub.noProfile'));
+    }
+  });
+
+  $('export').addEventListener('click', () => M.exportAll());
+  $('importBtn').addEventListener('click', () => $('importFile').click());
+  $('importFile').addEventListener('change', async e => {
+    const file = e.target.files[0];
+    e.target.value = '';
+    if (!file || !confirm(M.t('hub.importConfirm'))) return;
+    try { M.importAll(await file.text()); render(); msg(M.t('hub.imported')); }
+    catch { msg(M.t('hub.importFail')); }
+  });
+
+  $('lang').addEventListener('click', () => { M.setLang(M.lang() === 'cs' ? 'en' : 'cs'); render(); });
+
+  const linked = M.syncFromHash();
+  render();
+  if (linked) msg(M.t('sync.linked'));
+  if (M.syncConfig()) runSync();
+})();
+</script>
+</body>
+</html>

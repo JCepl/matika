@@ -32,6 +32,7 @@ const Matika = (() => {
   const profiles = () => store.get('profiles', []);
   const current = () => profiles().find(p => p.id === store.get('current', null)) || null;
   const setCurrent = id => store.set('current', id);
+  const setChildMode = on => store.set('child', !!on);   // child's own device vs the parent's
 
   function addProfile(name) {
     const p = { id: 'p' + Date.now().toString(36), name: name.trim(), created: Date.now() };
@@ -155,7 +156,7 @@ const Matika = (() => {
       for (const rp of rProfiles) {               // children set up on another device
         if (ignored.includes(rp.id) || profiles().some(p => p.id === rp.id)) continue;
         store.set('profiles', [...profiles(), { id: rp.id, name: rp.name, created: rp.created }]);
-        if (!current()) setCurrent(rp.id);
+        if (!current() && !store.get('child', false)) setCurrent(rp.id);   // a child's device never adopts someone else
       }
 
       for (const p of profiles()) {
@@ -219,7 +220,7 @@ const Matika = (() => {
   navigator.storage?.persist?.().catch(() => {});
 
   return {
-    profiles, current, setCurrent, addProfile, removeProfile, requireProfile,
+    profiles, current, setCurrent, setChildMode, addProfile, removeProfile, requireProfile,
     load, loadFor, save, clear, addStrings, lang, setLang, t, applyI18n, fmt, fmtDate, esc,
     exportAll, importAll, syncConfig, setSyncConfig, sync, syncFromHash, setupLink,
   };

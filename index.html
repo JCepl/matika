@@ -18,105 +18,34 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <style>
-  header.hero { padding: 32px 16px 8px; max-width: 1040px; margin: 0 auto; }
-  header.hero p { color: var(--ink-2); max-width: 60ch; }
-  section { margin-bottom: 24px; }
-  /* flat coloured bricks */
-  :root { --b-blue: #2f6fd0; --b-red: #d03b3b; --b-yellow: #f2b705; --b-green: #1c9a4a; --b-ink: #fff; }
-  .brick {
-    position: relative; border-radius: 12px;
-    background: var(--brick, var(--b-blue)); color: var(--b-ink);
-    box-shadow: none;
-  }
-  .brick.yellow { --brick: var(--b-yellow); --b-ink: #1b1b1a; }
-  .brick.red { --brick: var(--b-red); }
-  .brick.green { --brick: var(--b-green); }
-  .brick.blue { --brick: var(--b-blue); }
-
-  .kids { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
-  .kid { display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 12px 14px 12px 16px; gap: 2px 10px; }
-  .kid.cur { outline: 3px solid var(--ink); outline-offset: 3px; }
-  .kid .pick { all: unset; cursor: pointer; display: block; grid-column: 1; min-width: 0; }
-  .kid .pick:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; border-radius: 6px; }
-  .kid .nm { font-weight: 700; font-size: 1.2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .kid .x { grid-column: 2; grid-row: 1; border: 0; background: none; color: inherit; opacity: .7; cursor: pointer; font-size: 1.2rem; padding: 4px 6px; }
-  .kid .stat { grid-column: 1 / -1; margin-top: 6px; }
-  .kid .meter { height: 10px; border-radius: 999px; background: rgba(0, 0, 0, .25); display: flex; overflow: hidden; gap: 2px; }
-  .kid .meter span { display: block; height: 100%; background: #fff; }
-  .kid .meter .warn { background: #ffd24a; }
-  .kid .meter .bad { background: #ff7b7b; }
-  .kid .meter .good { background: #8df08d; }
-  .kid .sub { font-size: .85rem; opacity: .92; margin-top: 5px; display: flex; justify-content: space-between; gap: 8px; }
-  .kid .sub a { color: inherit; font-weight: 700; text-decoration: none; background: rgba(0, 0, 0, .22); padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
-  .kid .sub a:hover { background: rgba(0, 0, 0, .35); }
-  .kid .sub a:focus-visible { outline: 3px solid var(--b-ink); outline-offset: 2px; }
-  .add-form { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
-
-  .apps { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
-  .app { position: relative; display: block; text-decoration: none; color: var(--ink); }
-  .app .top { padding: 14px 16px 12px; display: flex; align-items: center; gap: 14px; }
-  .app .top svg { width: 64px; height: 64px; flex: none; border-radius: 6px; background: rgba(0, 0, 0, .2); padding: 3px; }
-  .app .top .ico { font-weight: 800; font-size: 1.7rem; letter-spacing: -.02em; }
-  .app .body { background: var(--surface); border: 1px solid var(--line); border-top: 0; border-radius: 0 0 var(--radius) var(--radius); padding: 12px 16px 16px; box-shadow: var(--shadow); }
-  .app .brick { margin-top: 0; border-radius: var(--radius) var(--radius) 0 0; }
-  .app h3 { margin: 0; font-size: 1.2rem; }
-  .app p { color: var(--ink-2); margin: 0; font-size: .95rem; }
-  a.app:hover .body { border-color: var(--accent); }
-  a.app:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; border-radius: 12px; }
-  .app.soon { opacity: .6; }
-  .app.soon .brick { --brick: var(--none); --b-ink: var(--on-none); }
-  .app.soon .body { border-style: dashed; box-shadow: none; }
-  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  .note { font-size: .9rem; color: var(--muted); margin-top: 10px; }
-  .sync-form { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
-  .sync-form input { max-width: none; flex: 1 1 280px; }
-  .status { margin: 8px 0 12px; }
-  .status.err { color: var(--bad-ink); }
-  .steps { color: var(--ink-2); padding-left: 1.2em; margin: 8px 0; }
-  .steps li { margin: 6px 0; }
-  details summary { cursor: pointer; font-weight: 600; margin-top: 8px; }
-  pre.code { background: var(--surface-2); border-radius: 10px; padding: 12px; max-height: 260px; overflow: auto; font-size: .78rem; }
+  main.wrap { max-width: 560px; padding: 20px 16px calc(32px + env(safe-area-inset-bottom)); }
+  h1 { font-size: 2rem; margin-top: 12px; }
+  .lead { color: var(--ink-2); }
+  .block { margin: 0 0 16px; }
+  .name-form { display: grid; gap: 12px; margin-top: 16px; }
+  .name-form input { max-width: none; width: 100%; font-size: 1.3rem; padding: 14px 16px; border-radius: 14px; }
+  .name-form .btn { width: 100%; }
+  .me { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .meter { height: 12px; border-radius: 999px; background: var(--none); display: flex; overflow: hidden; gap: 2px; margin: 10px 0 8px; }
+  .meter span { display: block; height: 100%; }
+  .meter .good { background: var(--good); }
+  .meter .warn { background: var(--warn); }
+  .meter .bad { background: var(--bad); }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .9rem; color: var(--ink-2); }
+  .app { display: flex; align-items: center; gap: 16px; text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 14px; margin-bottom: 12px; min-height: 88px; }
+  .app:active { background: var(--surface-2); }
+  .app svg { width: 64px; height: 64px; flex: none; border-radius: 10px; background: var(--accent); padding: 4px; }
+  .app h3 { margin: 0 0 2px; font-size: 1.2rem; }
+  .app p { margin: 0; color: var(--ink-2); font-size: .95rem; }
+  .app.soon { opacity: .55; border-style: dashed; box-shadow: none; }
+  .app.soon .ico { width: 64px; height: 64px; flex: none; border-radius: 10px; background: var(--none); color: var(--on-none); display: grid; place-items: center; font-weight: 800; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: space-between; margin-top: 8px; }
+  .row .btn { min-height: 44px; }
+  .msg { color: var(--ink-2); min-height: 1.5em; }
 </style>
 </head>
 <body>
-<header class="hero">
-  <h1 data-i18n="hub.title">Matika</h1>
-  <p data-i18n="hub.lead"></p>
-</header>
-
-<main class="wrap">
-  <section class="card">
-    <h2 data-i18n="hub.who"></h2>
-    <div class="kids" id="profiles"></div>
-    <form class="add-form" id="addForm">
-      <input type="text" id="newName" maxlength="24" autocomplete="off">
-      <button class="btn" type="submit" data-i18n="hub.add"></button>
-    </form>
-  </section>
-
-  <section>
-    <h2 data-i18n="hub.apps"></h2>
-    <div class="apps" id="apps"></div>
-  </section>
-
-  <section class="card">
-    <h2 data-i18n="sync.title"></h2>
-    <div id="syncBody"></div>
-  </section>
-
-  <section class="card">
-    <h2 data-i18n="hub.data"></h2>
-    <p class="muted" data-i18n="hub.dataLead"></p>
-    <div class="row">
-      <button class="btn" id="export" data-i18n="hub.export"></button>
-      <button class="btn" id="importBtn" data-i18n="hub.import"></button>
-      <input type="file" id="importFile" accept="application/json,.json" hidden>
-      <span style="flex:1"></span>
-      <button class="btn ghost" id="lang"></button>
-    </div>
-    <p class="note" id="msg" aria-live="polite"></p>
-  </section>
-</main>
+<main class="wrap" id="app"></main>
 
 <script src="shared/core.js"></script>
 <script src="nasobilka/stats.js"></script>
@@ -125,266 +54,111 @@
   const M = Matika;
   M.addStrings({
     cs: {
-      'hub.title': 'Matika',
-      'hub.lead': 'Malé aplikace na procvičování. Každá si pamatuje, co už jde samo a co je potřeba ještě trénovat – zvlášť pro každé dítě.',
-      'hub.who': 'Kdo bude počítat?',
-      'hub.add': 'Přidat',
-      'hub.namePh': 'Jméno',
-      'hub.remove': 'Smazat profil {name} a všechny jeho výsledky? Nejde to vrátit.',
-      'kid.auto': 'Jde samo {g} ze 100',
-      'kid.none': 'Zatím bez výsledků',
-      'kid.stats': 'Statistika →',
-      'kid.last': 'naposledy {when}',
-      'hub.noProfile': 'Nejdřív přidej jméno.',
-      'hub.apps': 'Aplikace',
-      'hub.soon': 'připravujeme',
+      'u.who': 'Jak se jmenuješ?',
+      'u.lead': 'Napiš své jméno nebo přezdívku. Příště ho napíšeš znovu a uvidíš svoje výsledky.',
+      'u.name': 'Tvoje jméno',
+      'u.go': 'Jdeme na to',
+      'u.hello': 'Ahoj, {name}!',
+      'u.back': 'Vítej zpátky, {name}!',
+      'u.auto': 'Jde samo {g} ze 100',
+      'u.results': 'Moje výsledky',
+      'u.notMe': 'Nejsem {name}',
+      'u.apps': 'Co budeme dělat?',
+      'u.linked': 'Zařízení je připojené.',
       'app.nasobilka': 'Násobilka',
-      'app.nasobilka.d': 'Co už umím? Mapa malé násobilky 1–10: co jde samo, co je pomalé a kde vznikají chyby.',
+      'app.nasobilka.d': 'Procvič si násobení a uvidíš, co už ti jde samo.',
       'app.more': 'Další aplikace',
-      'app.more.d': 'Sčítání a odčítání zpaměti, dělení, zlomky, slovní úlohy…',
-      'hub.data': 'Data',
-      'hub.dataLead': 'Výsledky se ukládají jen v tomhle prohlížeči na tomhle zařízení. Zálohu si stáhni do souboru; ze souboru ji jde obnovit i na jiném zařízení.',
-      'hub.export': 'Stáhnout zálohu',
-      'hub.import': 'Obnovit ze zálohy',
-      'hub.importConfirm': 'Obnovení nahradí všechna současná data v tomhle prohlížeči. Pokračovat?',
-      'hub.imported': 'Záloha obnovena.',
-      'hub.importFail': 'Tohle není záloha z Matiky.',
-      'hub.lang': 'English',
-      'sync.title': 'Posílání výsledků do Google tabulky',
-      'sync.lead': 'Po každém kole se výsledky pošlou do tvé Google tabulky. Každé zařízení se stejným odkazem (třeba telefon rodiče) si z ní stáhne všechny děti a jejich mapy.',
-      'sync.url': 'Odkaz na skript (Web app URL, končí /exec)',
-      'sync.save': 'Připojit',
-      'sync.howto': 'Jak tabulku připravit (jednou, asi 10 minut)',
-      'sync.step1': 'Na drive.google.com založ novou Google tabulku, třeba „Matika – výsledky“.',
-      'sync.step2': 'V tabulce: Rozšíření → Apps Script. Smaž, co tam je, a vlož skript níže. Ulož (ikona diskety).',
-      'sync.step3': 'Vpravo nahoře Nasadit → Nové nasazení → ozubené kolo → Webová aplikace. Spustit jako: Já. Kdo má přístup: Kdokoli. Nasadit.',
-      'sync.step4': 'Google se zeptá na oprávnění – povol je (u „aplikace není ověřená“ klikni Rozšířené → Přejít na…). Je to tvůj vlastní skript.',
-      'sync.step5': 'Zkopíruj „Adresu URL webové aplikace“ a vlož ji sem.',
-      'sync.script': 'Skript',
-      'sync.copyScript': 'Zkopírovat skript',
-      'sync.ok': 'Připojeno ke Google tabulce.',
-      'sync.last': 'Naposledy synchronizováno {when}.',
-      'sync.never': 'Zatím nesynchronizováno.',
-      'sync.busy': 'Synchronizuji…',
-      'sync.err': 'Poslední pokus selhal ({e}). Zkusí se znovu po dalším kole – bez internetu se nic neztratí.',
-      'sync.now': 'Synchronizovat teď',
-      'sync.link': 'Zkopírovat odkaz pro další zařízení',
-      'sync.linkNote': 'Pošli odkaz na druhý telefon (třeba přes WhatsApp) a otevři ho v Chromu – zařízení se připojí samo. S odkazem jde výsledky číst, sdílej ho jen v rodině.',
-      'sync.copied': 'Zkopírováno.',
-      'sync.off': 'Odpojit',
-      'sync.offConfirm': 'Odpojit toto zařízení? Data zůstanou tady i v tabulce, jen se přestanou posílat.',
-      'sync.linked': 'Zařízení je připojené – výsledky se budou posílat do tabulky.',
+      'app.more.d': 'Připravujeme.',
+      'st.good': 'Jde samo', 'st.warn': 'Skoro', 'st.bad': 'Trénovat', 'st.none': 'Nevyzkoušeno',
+      'u.lang': 'English',
     },
     en: {
-      'hub.title': 'Maths',
-      'hub.lead': 'Small practice apps. Each one remembers what is already automatic and what still needs practice – separately for each child.',
-      'hub.who': 'Who is practising?',
-      'hub.add': 'Add',
-      'hub.namePh': 'Name',
-      'hub.remove': 'Delete profile {name} and all of its results? This cannot be undone.',
-      'kid.auto': 'Automatic: {g} of 100',
-      'kid.none': 'No results yet',
-      'kid.stats': 'Statistics →',
-      'kid.last': 'last {when}',
-      'hub.noProfile': 'Add a name first.',
-      'hub.apps': 'Apps',
-      'hub.soon': 'coming later',
+      'u.who': 'What is your name?',
+      'u.lead': 'Type your name or nickname. Next time type it again and you will see your results.',
+      'u.name': 'Your name',
+      'u.go': "Let's go",
+      'u.hello': 'Hi, {name}!',
+      'u.back': 'Welcome back, {name}!',
+      'u.auto': 'Automatic: {g} of 100',
+      'u.results': 'My results',
+      'u.notMe': "I'm not {name}",
+      'u.apps': 'What shall we do?',
+      'u.linked': 'This device is connected.',
       'app.nasobilka': 'Times tables',
-      'app.nasobilka.d': 'What do I know? A map of the 1–10 times tables: what is automatic, what is slow and where mistakes happen.',
+      'app.nasobilka.d': 'Practise multiplication and see what is already automatic.',
       'app.more': 'More apps',
-      'app.more.d': 'Mental addition and subtraction, division, fractions, word problems…',
-      'hub.data': 'Data',
-      'hub.dataLead': 'Results are stored only in this browser on this device. Download a backup file; it can be restored here or on another device.',
-      'hub.export': 'Download backup',
-      'hub.import': 'Restore from backup',
-      'hub.importConfirm': 'Restoring replaces all current data in this browser. Continue?',
-      'hub.imported': 'Backup restored.',
-      'hub.importFail': 'This is not a Matika backup.',
-      'hub.lang': 'Čeština',
-      'sync.title': 'Sending results to a Google Sheet',
-      'sync.lead': 'After every round the results are sent to your Google Sheet. Any device with the same link (e.g. a parent\'s phone) pulls all children and their maps from it.',
-      'sync.url': 'Script link (Web app URL, ends with /exec)',
-      'sync.save': 'Connect',
-      'sync.howto': 'How to prepare the sheet (once, about 10 minutes)',
-      'sync.step1': 'At drive.google.com create a new Google Sheet, e.g. "Matika – results".',
-      'sync.step2': 'In the sheet: Extensions → Apps Script. Delete what is there, paste the script below, save.',
-      'sync.step3': 'Top right: Deploy → New deployment → gear icon → Web app. Execute as: Me. Who has access: Anyone. Deploy.',
-      'sync.step4': 'Google asks for permission – allow it (on "app isn\'t verified" click Advanced → Go to…). It is your own script.',
-      'sync.step5': 'Copy the "Web app URL" and paste it here.',
-      'sync.script': 'Script',
-      'sync.copyScript': 'Copy script',
-      'sync.ok': 'Connected to a Google Sheet.',
-      'sync.last': 'Last synced {when}.',
-      'sync.never': 'Not synced yet.',
-      'sync.busy': 'Syncing…',
-      'sync.err': 'The last attempt failed ({e}). It retries after the next round – nothing is lost offline.',
-      'sync.now': 'Sync now',
-      'sync.link': 'Copy link for another device',
-      'sync.linkNote': 'Send the link to the other phone (e.g. via WhatsApp) and open it in Chrome – the device connects itself. The link lets anyone read the results, so share it only within the family.',
-      'sync.copied': 'Copied.',
-      'sync.off': 'Disconnect',
-      'sync.offConfirm': 'Disconnect this device? Data stays here and in the sheet, it just stops being sent.',
-      'sync.linked': 'This device is connected – results will be sent to the sheet.',
+      'app.more.d': 'Coming later.',
+      'st.good': 'Automatic', 'st.warn': 'Almost', 'st.bad': 'Practise', 'st.none': 'Not tried',
+      'u.lang': 'Čeština',
     },
   });
 
-  const BRICKS = ['blue', 'red', 'yellow', 'green'];
   const QCOL = ['#f2b705', '#2f6fd0', '#d03b3b', '#1c9a4a'];
-
-  // the app's emblem: a 7 × 8 rectangle on a 10 × 10 lattice, split after 5 like in the practice picture
+  // the app's emblem: a 7 × 8 rectangle on a 10 × 10 lattice, split after 5
   const lattice = (a, b) => {
     let r = '';
     for (let y = 0; y < 10; y++) for (let x = 0; x < 10; x++) {
       const on = y < a && x < b;
       r += `<rect x="${x * 10 + 1}" y="${y * 10 + 1}" width="8" height="8" rx="1.8" fill="${on ? QCOL[(y >= 5 ? 2 : 0) + (x >= 5 ? 1 : 0)] : 'rgba(255,255,255,.22)'}"/>`;
     }
-    return `<svg viewBox="0 0 100 100" aria-hidden="true">${r}<path d="M50 0V100M0 50H100" stroke="#2f6fd0" stroke-width="2"/></svg>`;
+    return `<svg viewBox="0 0 100 100" aria-hidden="true">${r}</svg>`;
   };
-
-  const APPS = [
-    { href: 'nasobilka/index.html', key: 'nasobilka', color: 'blue', art: lattice(7, 8) },
-    { ico: '+ − ÷', key: 'more', soon: true, color: 'blue' },
-  ];
 
   const $ = id => document.getElementById(id);
-  const msg = text => { $('msg').textContent = text; };
+  let welcome = false;
 
   function render() {
-    M.applyI18n();
-    const t = M.t;
-    $('newName').placeholder = t('hub.namePh');
-    $('lang').textContent = t('hub.lang');
-
-    const cur = M.current();
-    const fmtWhen = ts => new Date(ts).toLocaleDateString(M.lang() === 'cs' ? 'cs-CZ' : 'en-GB', { day: 'numeric', month: 'numeric' });
-    $('profiles').innerHTML = M.profiles().map((p, i) => {
-      const sm = NasobilkaStats.summarize(M.loadFor(p.id, 'nasobilka', null));
-      const c = sm?.counts;
-      const meter = c ? ['good', 'warn', 'bad'].filter(k => c[k]).map(k => `<span class="${k}" style="width:${c[k]}%"></span>`).join('') : '';
-      return `
-      <div class="kid brick ${BRICKS[i % BRICKS.length]}${cur?.id === p.id ? ' cur' : ''}">
-        <button class="pick" data-id="${p.id}" aria-pressed="${cur?.id === p.id}">
-          <span class="nm">${M.esc(p.name)}</span>
-        </button>
-        <button class="x" data-remove="${p.id}" aria-label="${M.esc(t('hub.remove', { name: p.name }))}">×</button>
-        <div class="stat">
-          <div class="meter" role="img" aria-label="${c ? t('kid.auto', { g: c.good }) : t('kid.none')}">${meter}</div>
-          <div class="sub">
-            <span>${c ? t('kid.auto', { g: c.good }) : t('kid.none')}${sm ? ` · ${t('kid.last', { when: fmtWhen(sm.last) })}` : ''}</span>
-            <a href="nasobilka/index.html#map" data-stats="${p.id}">${t('kid.stats')}</a>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-
-    $('apps').innerHTML = APPS.map(a => {
-      const top = `<div class="brick ${a.color} top">${a.art || `<span class="ico">${a.ico}</span>`}<h3 style="color:inherit">${t('app.' + a.key)}</h3></div>`;
-      const body = `<div class="body"><p>${t('app.' + a.key + '.d')}</p>${a.soon ? `<p class="small muted" style="margin-top:8px">${t('hub.soon')}</p>` : ''}</div>`;
-      return a.soon ? `<div class="app soon">${top}${body}</div>` : `<a class="app" href="${a.href}" data-app>${top}${body}</a>`;
-    }).join('');
-    renderSync();
-  }
-
-  const copy = async (text, btn) => {
-    try { await navigator.clipboard.writeText(text); btn.textContent = M.t('sync.copied'); }
-    catch { prompt('', text); }
-  };
-
-  function renderSync(busy = false) {
-    const t = M.t;
-    const cfg = M.syncConfig();
-    if (!cfg) {
-      $('syncBody').innerHTML = `
-        <p class="muted">${t('sync.lead')}</p>
-        <form class="sync-form" id="syncForm">
-          <input type="url" id="syncUrl" placeholder="https://script.google.com/macros/s/…/exec" aria-label="${t('sync.url')}" required>
-          <button class="btn primary" type="submit">${t('sync.save')}</button>
+    const t = M.t, me = M.current();
+    document.documentElement.lang = M.lang();
+    if (!me) {
+      $('app').innerHTML = `
+        <h1>${t('u.who')}</h1>
+        <p class="lead">${t('u.lead')}</p>
+        <form class="name-form" id="nameForm">
+          <input type="text" id="name" maxlength="24" autocomplete="off" autocapitalize="words" enterkeyhint="go" placeholder="${t('u.name')}" aria-label="${t('u.name')}" required>
+          <button class="btn primary big" type="submit">${t('u.go')}</button>
         </form>
-        <details id="howto"><summary>${t('sync.howto')}</summary>
-          <ol class="steps">${[1, 2, 3, 4, 5].map(i => `<li>${t('sync.step' + i)}</li>`).join('')}</ol>
-          <div class="row"><strong>${t('sync.script')}</strong><button class="btn" id="copyScript" type="button">${t('sync.copyScript')}</button></div>
-          <pre class="code" id="script"></pre>
-        </details>`;
-      $('syncForm').onsubmit = e => {
+        <div class="row"><span></span><button class="btn ghost" id="lang">${t('u.lang')}</button></div>`;
+      $('nameForm').onsubmit = e => {
         e.preventDefault();
-        M.setSyncConfig({ url: $('syncUrl').value.trim() });
-        runSync();
+        const name = $('name').value.trim().replace(/\s+/g, ' ');
+        if (!name) return;
+        const known = M.profiles().find(p => p.name.toLowerCase() === name.toLowerCase());
+        if (known) { M.setCurrent(known.id); welcome = true; } else M.addProfile(name);
+        render();
       };
-      $('howto').ontoggle = async () => {
-        if ($('script').textContent) return;
-        try { $('script').textContent = await (await fetch('sheets/Code.gs')).text(); } catch { /* offline */ }
-      };
-      $('copyScript').onclick = e => copy($('script').textContent, e.target);
-      return;
+    } else {
+      const sm = NasobilkaStats.summarize(M.loadFor(me.id, 'nasobilka', null));
+      const c = sm?.counts;
+      const kinds = ['good', 'warn', 'bad', 'none'];
+      $('app').innerHTML = `
+        <h1>${t(welcome ? 'u.back' : 'u.hello', { name: M.esc(me.name) })}</h1>
+        ${c ? `<div class="card block">
+          <div class="me"><h2 style="margin:0">${t('u.auto', { g: c.good })}</h2>
+            <a class="btn" href="nasobilka/index.html#map" style="text-decoration:none">${t('u.results')}</a></div>
+          <div class="meter" role="img" aria-label="${kinds.map(k => `${t('st.' + k)} ${c[k]}`).join(', ')}">
+            ${['good', 'warn', 'bad'].filter(k => c[k]).map(k => `<span class="${k}" style="width:${c[k]}%"></span>`).join('')}
+          </div>
+          <div class="legend">${kinds.map(k => `<span><span class="sw ${k}"></span> ${t('st.' + k)} ${c[k]}</span>`).join('')}</div>
+        </div>` : ''}
+        <h2>${t('u.apps')}</h2>
+        <a class="app" href="nasobilka/index.html">${lattice(7, 8)}<div><h3>${t('app.nasobilka')}</h3><p>${t('app.nasobilka.d')}</p></div></a>
+        <div class="app soon"><span class="ico">+ − ÷</span><div><h3>${t('app.more')}</h3><p>${t('app.more.d')}</p></div></div>
+        <div class="row">
+          <button class="btn ghost" id="notMe">${t('u.notMe', { name: M.esc(me.name) })}</button>
+          <button class="btn ghost" id="lang">${t('u.lang')}</button>
+        </div>
+        <p class="msg" id="msg" aria-live="polite"></p>`;
+      $('notMe').onclick = () => { M.setCurrent(null); welcome = false; render(); };
     }
-    const when = cfg.last && new Date(cfg.last).toLocaleString(M.lang() === 'cs' ? 'cs-CZ' : 'en-GB',
-      { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' });
-    $('syncBody').innerHTML = `
-      <p class="status">${t('sync.ok')} ${busy ? t('sync.busy') : when ? t('sync.last', { when }) : t('sync.never')}</p>
-      ${cfg.error && !busy ? `<p class="status err">${t('sync.err', { e: M.esc(cfg.error) })}</p>` : ''}
-      <div class="row">
-        <button class="btn" id="syncNow" ${busy ? 'disabled' : ''}>${t('sync.now')}</button>
-        <button class="btn" id="syncLink">${t('sync.link')}</button>
-        <button class="btn ghost danger" id="syncOff">${t('sync.off')}</button>
-      </div>
-      <p class="note">${t('sync.linkNote')}</p>`;
-    $('syncNow').onclick = runSync;
-    $('syncLink').onclick = e => copy(M.setupLink(), e.target);
-    $('syncOff').onclick = () => { if (confirm(t('sync.offConfirm'))) { M.setSyncConfig(null); renderSync(); } };
+    $('lang').onclick = () => { M.setLang(M.lang() === 'cs' ? 'en' : 'cs'); render(); };
   }
 
-  async function runSync() {
-    renderSync(true);
-    await M.sync();
-    render();
-  }
-
-  $('profiles').addEventListener('click', e => {
-    const st = e.target.closest('[data-stats]');
-    if (st) { M.setCurrent(st.dataset.stats); return; }   // then the link opens that child's map
-    const pick = e.target.closest('[data-id]');
-    const del = e.target.closest('[data-remove]');
-    if (pick) { M.setCurrent(pick.dataset.id); render(); }
-    if (del) {
-      const p = M.profiles().find(x => x.id === del.dataset.remove);
-      if (p && confirm(M.t('hub.remove', { name: p.name }))) { M.removeProfile(p.id); render(); }
-    }
-  });
-
-  $('addForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const name = $('newName').value.trim();
-    if (!name) return;
-    M.addProfile(name);
-    $('newName').value = '';
-    render();
-  });
-
-  $('apps').addEventListener('click', e => {
-    if (e.target.closest('[data-app]') && !M.current()) {
-      e.preventDefault();
-      msg('');
-      $('newName').focus();
-      alert(M.t('hub.noProfile'));
-    }
-  });
-
-  $('export').addEventListener('click', () => M.exportAll());
-  $('importBtn').addEventListener('click', () => $('importFile').click());
-  $('importFile').addEventListener('change', async e => {
-    const file = e.target.files[0];
-    e.target.value = '';
-    if (!file || !confirm(M.t('hub.importConfirm'))) return;
-    try { M.importAll(await file.text()); render(); msg(M.t('hub.imported')); }
-    catch { msg(M.t('hub.importFail')); }
-  });
-
-  $('lang').addEventListener('click', () => { M.setLang(M.lang() === 'cs' ? 'en' : 'cs'); render(); });
-
+  M.setChildMode(true);
   const linked = M.syncFromHash();
   render();
-  if (linked) msg(M.t('sync.linked'));
-  if (M.syncConfig()) runSync();
+  if (linked && $('msg')) $('msg').textContent = M.t('u.linked');
+  if (M.syncConfig()) M.sync().then(r => { if (r.ok) render(); });
 })();
 </script>
 </body>

@@ -1,8 +1,8 @@
 // Offline cache for the installed app. Pages open instantly from the cache and are refreshed
 // in the background, so a new version shows up on the next launch.
-const CACHE = 'matika-v2';
+const CACHE = 'matika-v3';
 const FILES = [
-  './', 'index.html', 'manifest.webmanifest',
+  './', 'index.html', 'parent.html', 'manifest.webmanifest',
   'shared/core.js', 'shared/core.css',
   'nasobilka/', 'nasobilka/index.html', 'nasobilka/nasobilka.js', 'nasobilka/stats.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png',

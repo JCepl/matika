@@ -31,6 +31,7 @@ M.addStrings({
     'start.tables': 'Které násobilky?',
     'start.all': 'Všechny',
     'start.go': 'Začít',
+    'start.adv': 'Pokročilé nastavení',
     'start.viz': 'Obrázek k příkladu',
     'start.vizOn': 'Ukazovat při počítání',
     'start.vizNote': 'Obdélník ze čtverečků ukáže, co příklad znamená. Po chybě se obrázek ukáže vždy. Odpovědi s obrázkem se počítají normálně, jen jsou v tabulce označené.',
@@ -103,6 +104,7 @@ M.addStrings({
     'start.tables': 'Which tables?',
     'start.all': 'All',
     'start.go': 'Start',
+    'start.adv': 'Advanced settings',
     'start.viz': 'Picture for the problem',
     'start.vizOn': 'Show while solving',
     'start.vizNote': 'A rectangle of small squares shows what the problem means. After a mistake the picture is always shown. Answers given with the picture count normally, they are just marked in the sheet.',
@@ -387,6 +389,8 @@ function renderChrome() {
 
 // ---- start
 
+let advOpen = false;
+
 function renderStart() {
   const c = countStatuses(factStats());
   const s = data.settings;
@@ -410,14 +414,15 @@ function renderStart() {
         ${[10, 20, 30].map(n => `<button class="chip" data-len="${n}" aria-pressed="${s.sessionLen === n}">${n}</button>`).join('')}
       </div>
     </div>
-    <div class="block">
+    <details class="block adv" id="adv"${advOpen ? ' open' : ''}>
+      <summary>${t('start.adv')}</summary>
       <h3>${t('start.tables')}</h3>
       <div class="chips" id="tabChips">
         <button class="chip" data-tab="all" aria-pressed="${allOn}">${t('start.all')}</button>
         ${Array.from({ length: N }, (_, i) => i + 1).map(n =>
           `<button class="chip" data-tab="${n}" aria-pressed="${!allOn && s.tables.includes(n)}">${n}</button>`).join('')}
       </div>
-    </div>
+    </details>
     <div class="block">
       <h3>${t('start.viz')}</h3>
       <div class="chips"><button class="chip" id="vizChip" aria-pressed="${s.showVisual}">${t('start.vizOn')}</button></div>
@@ -425,6 +430,7 @@ function renderStart() {
     </div>
     <div class="go"><button class="btn primary big" id="go">${t('start.go')}</button></div>`;
 
+  $('adv').ontoggle = () => { advOpen = $('adv').open; };
   $('lenChips').onclick = e => {
     const b = e.target.closest('[data-len]');
     if (b) { s.sessionLen = Number(b.dataset.len); persist(); renderStart(); }

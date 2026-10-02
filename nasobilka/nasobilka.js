@@ -8,15 +8,14 @@ const M = Matika;
 const t = M.t;
 
 const APP = 'nasobilka';
-const N = 10;
-const WINDOW = 3;          // last "cold" attempts used to judge a fact (re-asks after a mistake don't count)
-const TIME_CAP = 30000;    // an answer slower than 30 s counts as 30 s
+const NS = NasobilkaStats;
+const { N, WINDOW, key } = NS;
 const RETRIES = 2;         // a missed fact comes back at most twice in the same session
 const RETRY_GAP = 3;       // ...after this many other problems
 const KNOWN_SHARE = 0.3;   // share of already-automatic facts mixed in, so every session has easy wins
 const HISTORY_MAX = 30;    // sessions shown in the progress chart
 const DAY = 864e5;
-const DEFAULTS = { fastSec: 3, slowSec: 6, sessionLen: 20, tables: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] };
+const DEFAULTS = NS.DEFAULTS;
 const STATUSES = ['good', 'warn', 'bad', 'none'];
 
 M.addStrings({
@@ -32,6 +31,11 @@ M.addStrings({
     'start.tables': 'Které násobilky?',
     'start.all': 'Všechny',
     'start.go': 'Začít',
+    'start.viz': 'Obrázek k příkladu',
+    'start.vizOn': 'Ukazovat při počítání',
+    'start.vizNote': 'Obdélník ze čtverečků ukáže, co příklad znamená. Po chybě se obrázek ukáže vždy. Odpovědi s obrázkem se počítají normálně, jen jsou v tabulce označené.',
+    'viz.label': 'Obdélník {a} krát {b}',
+    'd.vis': 'obrázek', 'd.skipped': 'první chyba, nezapočítává se',
     'practice.quit': 'Ukončit',
     'practice.copy': 'Správně je <strong>{q} = {c}</strong><br>Napiš {c} a jedeme dál.',
     'summary.title': 'Hotovo!',
@@ -54,7 +58,7 @@ M.addStrings({
     'map.historyEmpty': 'Graf se objeví po prvním odehraném kole.',
     'map.round': 'Kolo {i}',
     'map.rules': 'Jak se barvy počítají',
-    'map.rule1': 'U každého příkladu se berou poslední {w} pokusy. Opakování hned po chybě (ve stejném kole) se nepočítá – to je trénink, ne zkouška.',
+    'map.rule1': 'U každého příkladu se berou poslední {w} pokusy. Opakování hned po chybě (ve stejném kole) se nepočítá – to je trénink, ne zkouška. První chyba u každého příkladu se taky nepočítá (překlepy).',
     'map.rule2': 'Zelená – bez chyby a typický čas nejvýš {f} s.',
     'map.rule3': 'Žlutá – jedna chyba, nebo čas mezi {f} a {s} s.',
     'map.rule4': 'Červená – dvě a více chyb, nebo typický čas nad {s} s.',
@@ -99,6 +103,11 @@ M.addStrings({
     'start.tables': 'Which tables?',
     'start.all': 'All',
     'start.go': 'Start',
+    'start.viz': 'Picture for the problem',
+    'start.vizOn': 'Show while solving',
+    'start.vizNote': 'A rectangle of small squares shows what the problem means. After a mistake the picture is always shown. Answers given with the picture count normally, they are just marked in the sheet.',
+    'viz.label': 'Rectangle {a} times {b}',
+    'd.vis': 'picture', 'd.skipped': 'first mistake, not counted',
     'practice.quit': 'Stop',
     'practice.copy': 'The answer is <strong>{q} = {c}</strong><br>Type {c} and we go on.',
     'summary.title': 'Done!',
@@ -121,7 +130,7 @@ M.addStrings({
     'map.historyEmpty': 'The chart appears after the first round.',
     'map.round': 'Round {i}',
     'map.rules': 'How the colours work',
-    'map.rule1': 'Each fact is judged on its last {w} attempts. Re-asks right after a mistake (in the same round) do not count – that is practice, not a test.',
+    'map.rule1': 'Each fact is judged on its last {w} attempts. Re-asks right after a mistake (in the same round) do not count – that is practice, not a test. The first mistake on each fact is ignored too (typos).',
     'map.rule2': 'Green – no mistake and typical time at most {f} s.',
     'map.rule3': 'Yellow – one mistake, or time between {f} and {s} s.',
     'map.rule4': 'Red – two or more mistakes, or typical time over {s} s.',
@@ -160,11 +169,26 @@ const profile = M.requireProfile('../index.html');
 if (!profile) return;
 
 const $ = id => document.getElementById(id);
-const key = (a, b) => `${a}x${b}`;
 const q = (a, b) => `${a} ${t('op')} ${b}`;
 const secs = ms => `${M.fmt(ms / 1000)} s`;
-const median = xs => { const s = [...xs].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 const shuffle = xs => { for (let i = xs.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [xs[i], xs[j]] = [xs[j], xs[i]]; } return xs; };
+
+// ---------------------------------------------------------------- picture
+
+// The problem as a rectangle on a 10×10 lattice: a rows × b columns. Faint lines every 2, and a
+// slightly stronger one after 5 (like a ten-frame), so 7 · 8 can be read as (5 + 2) · (5 + 3).
+function vizHtml(a, b) {
+  const C = 20, W = N * C;
+  let cells = '';
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    const on = r < a && c < b;
+    cells += `<rect class="${on ? 'q' + ((r >= 5 ? 2 : 0) + (c >= 5 ? 1 : 0)) : 'e'}" x="${c * C + 1}" y="${r * C + 1}" width="${C - 2}" height="${C - 2}" rx="2"/>`;
+  }
+  let lines = '';
+  for (const k of [2, 4, 6, 8]) lines += `<path class="v2" d="M${k * C} 0V${W}M0 ${k * C}H${W}"/>`;
+  lines += `<path class="v5" d="M${W / 2} 0V${W}M0 ${W / 2}H${W}"/>`;
+  return `<svg viewBox="0 0 ${W} ${W}" role="img" aria-label="${t('viz.label', { a, b })}">${cells}${lines}</svg>`;
+}
 
 // ---------------------------------------------------------------- data
 
@@ -178,36 +202,8 @@ function loadData() {
 }
 const persist = () => M.save(APP, data);
 
-// Judge every fact from its last WINDOW cold attempts (optionally only those made before `until`).
-function factStats(until = Infinity) {
-  const groups = {};
-  for (const at of data.attempts) {
-    if (at.t > until) break;
-    if (!at.retry) (groups[key(at.a, at.b)] ||= []).push(at);
-  }
-  const out = {};
-  for (let a = 1; a <= N; a++) for (let b = 1; b <= N; b++) out[key(a, b)] = judge(groups[key(a, b)] || []);
-  return out;
-}
-
-function judge(list) {
-  const win = list.slice(-WINDOW);
-  if (!win.length) return { status: 'none', n: 0 };
-  const errors = win.filter(x => !x.ok).length;
-  const times = win.filter(x => x.ok && x.ms != null).map(x => Math.min(x.ms, TIME_CAP));
-  const med = times.length ? median(times) : null;
-  const { fastSec, slowSec } = data.settings;
-  let status = 'warn';
-  if (errors >= 2 || errors === win.length || med > slowSec * 1000) status = 'bad';
-  else if (errors === 0 && med != null && med <= fastSec * 1000) status = 'good';
-  return { status, n: win.length, errors, med, provisional: win.length < 2 };
-}
-
-function countStatuses(stats) {
-  const c = { good: 0, warn: 0, bad: 0, none: 0 };
-  Object.values(stats).forEach(s => c[s.status]++);
-  return c;
-}
+const factStats = (until = Infinity) => NS.factStats(data.attempts, data.settings, until);
+const countStatuses = NS.count;
 
 // ---------------------------------------------------------------- choosing problems
 
@@ -269,7 +265,8 @@ function startSession() {
 function nextProblem() {
   if (S.idx >= S.queue.length) return finishSession();
   const { a, b } = S.queue[S.idx];
-  Object.assign(S, { input: '', mode: 'answer', busy: false, firstKey: null, away: document.hidden });
+  Object.assign(S, { input: '', mode: 'answer', busy: false, firstKey: null, away: document.hidden, viz: data.settings.showVisual });
+  $('viz').innerHTML = S.viz ? vizHtml(a, b) : '';
   $('qa').textContent = a;
   $('qb').textContent = b;
   $('hint').innerHTML = '';
@@ -317,6 +314,7 @@ function submit() {
     ms: timed ? Math.round(performance.now() - S.t0) : null,
     first: timed && S.firstKey != null ? Math.round(S.firstKey) : null,
     t: Date.now(), sid: S.id, ...(item.retry && { retry: true }),
+    ...(S.viz && { vis: 1 }),
   });
   persist();
 
@@ -334,6 +332,7 @@ function submit() {
     Object.assign(S, { busy: false, mode: 'copy', input: '' });
     $('answer').className = 'answer copy';
     $('hint').innerHTML = t('practice.copy', { q: q(a, b), c });
+    $('viz').innerHTML = vizHtml(a, b);
     renderAnswer();
   }, 700);
 }
@@ -419,6 +418,11 @@ function renderStart() {
           `<button class="chip" data-tab="${n}" aria-pressed="${!allOn && s.tables.includes(n)}">${n}</button>`).join('')}
       </div>
     </div>
+    <div class="block">
+      <h3>${t('start.viz')}</h3>
+      <div class="chips"><button class="chip" id="vizChip" aria-pressed="${s.showVisual}">${t('start.vizOn')}</button></div>
+      <p class="muted small" style="margin-top:8px">${t('start.vizNote')}</p>
+    </div>
     <div class="go"><button class="btn primary big" id="go">${t('start.go')}</button></div>`;
 
   $('lenChips').onclick = e => {
@@ -439,6 +443,7 @@ function renderStart() {
     persist();
     renderStart();
   };
+  $('vizChip').onclick = () => { s.showVisual = !s.showVisual; persist(); renderStart(); };
   $('go').onclick = startSession;
 }
 
@@ -541,11 +546,13 @@ function detailHtml(k, stats) {
   const [a, b] = k.split('x').map(Number);
   const st = stats[k];
   const head = `<h3>${q(a, b)} = ${a * b}</h3>
-    <div class="badge"><span class="sw ${st.status}"></span>${t('st.' + st.status)}${st.provisional ? ` · ${t('st.prov')}` : ''}</div>`;
+    <div class="badge"><span class="sw ${st.status}"></span>${t('st.' + st.status)}${st.provisional ? ` · ${t('st.prov')}` : ''}</div>
+    <div class="viz detail-viz">${vizHtml(a, b)}</div>`;
   const all = data.attempts.filter(x => x.a === a && x.b === b);
   if (!all.length) return head + `<p class="muted" style="margin-top:10px">${t('d.never')}</p>`;
 
-  const cold = all.filter(x => !x.retry);
+  const skip = NS.ignored(data.attempts);
+  const cold = all.filter(x => !x.retry && !skip.has(x));
   const pct = Math.round(100 * cold.filter(x => x.ok).length / cold.length);
   const wrong = {};
   all.filter(x => !x.ok).forEach(x => { wrong[x.ans] = (wrong[x.ans] || 0) + 1; });
@@ -555,7 +562,7 @@ function detailHtml(k, stats) {
   const rows = all.slice(-8).reverse().map(x => `
     <tr><td>${M.fmtDate(x.t)}</td>
       <td class="${x.ok ? 'ok' : 'no'}">${x.ok ? '✓' : '✗'} ${x.ans}</td>
-      <td>${x.ms != null ? secs(x.ms) : t('d.noTime')}${x.retry ? ` <span class="muted small">(${t('d.retry')})</span>` : ''}</td></tr>`).join('');
+      <td>${x.ms != null ? secs(x.ms) : t('d.noTime')}${x.retry ? ` <span class="muted small">(${t('d.retry')})</span>` : ''}${x.vis ? ` <span class="muted small">(${t('d.vis')})</span>` : ''}${NS.ignored(data.attempts).has(x) ? ` <span class="muted small">(${t('d.skipped')})</span>` : ''}</td></tr>`).join('');
 
   return head + `
     <div style="margin-top:12px">
@@ -725,6 +732,6 @@ addEventListener('resize', () => {
 });
 
 renderChrome();
-show('start');
+show(location.hash === '#map' ? 'map' : 'start');
 syncNow();
 })();

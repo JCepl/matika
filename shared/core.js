@@ -63,6 +63,7 @@ const Matika = (() => {
     const p = current();
     return p ? store.set(`data:${p.id}:${app}`, data) : false;
   };
+  const loadFor = (id, app, fallback) => store.get(`data:${id}:${app}`, fallback);   // another child's data (read-only)
   const clear = app => { const p = current(); if (p) store.remove(`data:${p.id}:${app}`); };
 
   // ---- language ----
@@ -219,7 +220,7 @@ const Matika = (() => {
 
   return {
     profiles, current, setCurrent, addProfile, removeProfile, requireProfile,
-    load, save, clear, addStrings, lang, setLang, t, applyI18n, fmt, fmtDate, esc,
+    load, loadFor, save, clear, addStrings, lang, setLang, t, applyI18n, fmt, fmtDate, esc,
     exportAll, importAll, syncConfig, setSyncConfig, sync, syncFromHash, setupLink,
   };
 })();

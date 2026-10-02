@@ -60,6 +60,18 @@
   @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
   .shake { animation: shake .25s 2; }
 
+  /* ---- picture: the problem as a rectangle on a 10x10 lattice ---- */
+  .viz { width: min(150px, 24vh); margin: 0 auto; }
+  .viz:empty { display: none; }
+  .viz svg { display: block; width: 100%; height: auto; }
+  .viz .e { fill: var(--line); }
+  .viz .q0 { fill: var(--accent); }
+  .viz .q1, .viz .q2 { fill: var(--accent); fill-opacity: .68; }
+  .viz .q3 { fill: var(--accent); fill-opacity: .45; }
+  .viz .v2 { stroke: var(--bg); stroke-width: 1; opacity: .55; fill: none; }
+  .viz .v5 { stroke: var(--bg); stroke-width: 2; opacity: .9; fill: none; }
+  .detail-viz { width: 190px; margin: 12px 0 0; }
+
   /* ---- summary ---- */
   .summary { max-width: 640px; margin: 0 auto; }
   .summary .score { font-size: 1.3rem; }
@@ -160,6 +172,7 @@
     <div class="problem" aria-live="polite">
       <span id="qa"></span><span class="op" id="op"></span><span id="qb"></span><span class="eq">=</span><span class="answer" id="answer"></span>
     </div>
+    <div class="viz" id="viz"></div>
     <p class="hint" id="hint"></p>
     <div class="keypad" id="keypad">
       <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
@@ -177,6 +190,7 @@
 <div class="tip" id="tip" hidden></div>
 
 <script src="../shared/core.js"></script>
+<script src="stats.js"></script>
 <script src="nasobilka.js"></script>
 </body>
 </html>

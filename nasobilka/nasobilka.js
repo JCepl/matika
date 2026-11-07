@@ -79,6 +79,7 @@ M.addStrings({
     'd.retry': 'opakování',
     'd.noTime': '–',
     'set.title': 'Nastavení',
+    'set.pet': 'Mazlíček', 'pet.dragon': '🐲 Dráček', 'pet.snail': '🐌 Šnek', 'pet.none': 'Žádný',
     'set.fast': 'Zelená, když typický čas je nejvýš (s)',
     'set.slow': 'Červená, když typický čas je víc než (s)',
     'set.note': 'Čas se měří od zobrazení příkladu po stisk OK, včetně psaní. Výchozí 3 s a 6 s. Na tabletu trvá napsat dvouciferné číslo déle – klidně prahy zvyš. Změna přebarví i starší výsledky.',
@@ -152,6 +153,7 @@ M.addStrings({
     'd.retry': 're-ask',
     'd.noTime': '–',
     'set.title': 'Settings',
+    'set.pet': 'Pet', 'pet.dragon': '🐲 Dragon', 'pet.snail': '🐌 Snail', 'pet.none': 'None',
     'set.fast': 'Green when typical time is at most (s)',
     'set.slow': 'Red when typical time is more than (s)',
     'set.note': 'Time runs from showing the problem to pressing OK, typing included. Defaults 3 s and 6 s. Typing a two-digit number on a tablet takes longer – raise the thresholds if needed. Changes recolour older results too.',
@@ -272,6 +274,7 @@ function nextProblem() {
   if (S.idx >= S.queue.length) return finishSession();
   const { a, b } = S.queue[S.idx];
   Object.assign(S, { input: '', mode: 'answer', busy: false, firstKey: null, away: document.hidden, viz: data.settings.showVisual });
+  $('fan').dataset.pet = data.settings.pet || 'dragon';
   $('viz').innerHTML = S.viz ? vizHtml(a, b) : '';
   $('qa').textContent = a;
   $('qb').textContent = b;
@@ -698,6 +701,10 @@ function renderSettings() {
       <p class="small" id="setMsg" aria-live="polite"></p>
     </div>
     <div class="card">
+      <h2>${t('set.pet')}</h2>
+      <div class="chips">${['dragon', 'snail', 'none'].map(k => `<button class="chip" data-pet="${k}" aria-pressed="${(s.pet || 'dragon') === k}">${t('pet.' + k)}</button>`).join('')}</div>
+    </div>
+    <div class="card">
       <h2>${t('set.lang')}</h2>
       <button class="btn" id="langBtn">${t('set.langBtn')}</button>
     </div>
@@ -717,6 +724,7 @@ function renderSettings() {
   };
   $('fast').onchange = onThreshold;
   $('slow').onchange = onThreshold;
+  document.querySelectorAll('[data-pet]').forEach(b => b.onclick = () => { s.pet = b.dataset.pet; persist(); renderSettings(); });
   $('langBtn').onclick = () => { M.setLang(M.lang() === 'cs' ? 'en' : 'cs'); renderChrome(); renderSettings(); };
   $('reset').onclick = () => {
     if (!confirm(t('set.resetConfirm', { name: profile.name }))) return;

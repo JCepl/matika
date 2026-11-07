@@ -347,6 +347,10 @@ function submit() {
 // Haptics (Android; iOS Safari has no vibration API) + stars for a quick correct answer, a soft red tint for a mistake.
 function feedback(ok, fast) {
   try { navigator.vibrate && navigator.vibrate(ok ? (fast ? [25, 40, 25, 40, 60] : [30]) : [220, 70, 220]); } catch (e) {}
+  const fan = $('fan');
+  fan.classList.remove('cheer', 'big', 'oops'); void fan.getBoundingClientRect();
+  fan.classList.add(ok ? (fast ? 'big' : 'cheer') : 'oops');
+  setTimeout(() => fan.classList.remove('cheer', 'big', 'oops'), 1100);
   const el = document.createElement('div');
   if (!ok) {
     el.className = 'fx-red';

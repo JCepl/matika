@@ -74,6 +74,35 @@
   .viz .v5 { stroke: var(--bg); stroke-width: 2; opacity: .9; fill: none; }
   .detail-viz { width: 190px; margin: 12px 0 0; }
 
+  /* ---- fan: little cheerleader beside the problem ---- */
+  .practice { position: relative; }
+  .fan { position: absolute; right: 0; top: 34px; width: clamp(64px, 18vw, 92px); pointer-events: none; }
+  .fan svg { display: block; width: 100%; overflow: visible; }
+  .fan .arm.l { transform: rotate(-32deg); transform-origin: 26px 64px; }
+  .fan .arm.r { transform: rotate(32deg); transform-origin: 74px 64px; }
+  .fan .body { transform-origin: 50px 93px; }
+  .fan .m { display: none; }
+  .fan .smile { display: inline; }
+  .fan { animation: fanidle 2.4s ease-in-out infinite; }
+  @keyframes fanidle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  .fan.cheer, .fan.big { animation: fanjump .8s ease-out; }
+  .fan.big { animation-duration: 1s; }
+  .fan.cheer .smile, .fan.big .smile, .fan.oops .smile { display: none; }
+  .fan.cheer .open, .fan.big .open { display: inline; }
+  .fan.oops .flat { display: inline; }
+  .fan.cheer .arm.l, .fan.big .arm.l { animation: wavel .26s ease-in-out 3; }
+  .fan.cheer .arm.r, .fan.big .arm.r { animation: waver .26s ease-in-out 3; }
+  .fan.big .arm.l { animation-iteration-count: 4; }
+  .fan.big .arm.r { animation-iteration-count: 4; }
+  @keyframes fanjump { 0%, 100% { transform: translateY(0) scale(1, 1); } 20% { transform: translateY(0) scale(1.08, .92); } 50% { transform: translateY(-16px) scale(.95, 1.06); } 80% { transform: translateY(0) scale(1.05, .95); } }
+  @keyframes wavel { 0%, 100% { transform: rotate(-20deg); } 50% { transform: rotate(-55deg); } }
+  @keyframes waver { 0%, 100% { transform: rotate(20deg); } 50% { transform: rotate(55deg); } }
+  .fan.oops { animation: fanoops .9s ease-in-out; }
+  .fan.oops .arm.l { transform: rotate(-85deg); transition: transform .2s; }
+  .fan.oops .arm.r { transform: rotate(85deg); transition: transform .2s; }
+  @keyframes fanoops { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-6deg); } 60% { transform: rotate(5deg); } }
+  @media (prefers-reduced-motion: reduce) { .fan, .fan * { animation: none !important; } }
+
   /* ---- feedback: stars on a quick correct answer, faint red tint on a mistake ---- */
   .fx-stars { position: fixed; left: 50%; top: 38%; z-index: 20; pointer-events: none; }
   .fx-stars span { position: absolute; font-size: 1.8rem; opacity: 0; animation: star .9s ease-out var(--d) forwards; }
@@ -180,6 +209,18 @@
     </div>
     <div class="problem" aria-live="polite">
       <span id="qa"></span><span class="op" id="op"></span><span id="qb"></span><span class="eq">=</span><span class="answer" id="answer"></span>
+    </div>
+    <div class="fan" id="fan" aria-hidden="true">
+      <svg viewBox="0 0 100 100">
+        <g class="arm l"><path d="M26 64V36" stroke="var(--accent)" stroke-width="7" stroke-linecap="round"/><circle cx="26" cy="30" r="10" fill="#f4b73e"/><circle cx="26" cy="30" r="5" fill="#ffd978"/></g>
+        <g class="arm r"><path d="M74 64V36" stroke="var(--accent)" stroke-width="7" stroke-linecap="round"/><circle cx="74" cy="30" r="10" fill="#e8588c"/><circle cx="74" cy="30" r="5" fill="#ff9dbf"/></g>
+        <g class="body"><ellipse cx="50" cy="66" rx="26" ry="27" fill="var(--accent)"/>
+          <circle cx="41" cy="60" r="3.2" fill="#fff"/><circle cx="59" cy="60" r="3.2" fill="#fff"/>
+          <path class="m smile" d="M41 71q9 8 18 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path class="m open" d="M40 70q10 14 20 0z" fill="#fff"/>
+          <path class="m flat" d="M43 73q7-3 14 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </g>
+      </svg>
     </div>
     <div class="viz" id="viz"></div>
     <p class="hint" id="hint"></p>

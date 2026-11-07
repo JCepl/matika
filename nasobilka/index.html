@@ -117,7 +117,12 @@
   @keyframes wigr { 0%, 100% { transform: rotate(12deg); } 50% { transform: rotate(-14deg); } }
   @keyframes wobble { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-9deg); } }
   @media (prefers-reduced-motion: reduce) { .fan, .fan * { animation: none !important; } }
-  .pets { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+  .fan.prev { position: static; width: 72px; animation: none; display: block; }
+  .pets { display: flex; gap: 10px; flex-wrap: wrap; }
+  .pet-tile { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 104px; padding: 10px 6px; border: 2px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--ink); font: inherit; font-size: .95rem; cursor: pointer; touch-action: manipulation; }
+  .pet-tile[aria-pressed="true"] { border-color: var(--accent); background: var(--surface-2); font-weight: 600; }
+  .pet-tile:hover .fan.prev { animation: fanjump .8s ease-out; }
+  .pet-none { width: 72px; height: 72px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--muted); }
 
   /* ---- feedback: stars on a quick correct answer, faint red tint on a mistake ---- */
   .fx-stars { position: fixed; left: 50%; top: 38%; z-index: 20; pointer-events: none; }

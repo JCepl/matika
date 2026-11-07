@@ -426,6 +426,14 @@ function renderStart() {
   $('view-start').innerHTML = `
     <h1>${t('start.hello', { name: M.esc(profile.name) })}</h1>
     <p class="lead">${t('start.lead')}</p>
+    <div class="block">
+      <h3>${t('set.pet')}</h3>
+      <div class="pets" id="petPick">
+        ${['dragon', 'snail', 'none'].map(k => `<button class="pet-tile" data-pet="${k}" aria-pressed="${(s.pet || 'dragon') === k}">
+          ${k === 'none' ? '<span class="pet-none">✕</span>' : `<span class="fan prev" data-pet="${k}">${document.querySelector('#fan .pet.' + k).outerHTML}</span>`}
+          <span>${t('pet.' + k).replace(/^\S+\s/u, '')}</span></button>`).join('')}
+      </div>
+    </div>
     <div class="block card">
       <h3>${t('start.progress', { g: c.good })}</h3>
       <div class="meter" role="img" aria-label="${STATUSES.map(k => `${t('st.' + k)} ${c[k]}`).join(', ')}">
@@ -457,6 +465,10 @@ function renderStart() {
     </div>
     <div class="go"><button class="btn primary big" id="go">${t('start.go')}</button></div>`;
 
+  $('petPick').onclick = e => {
+    const b = e.target.closest('[data-pet]');
+    if (b) { s.pet = b.dataset.pet; persist(); renderStart(); }
+  };
   $('adv').ontoggle = () => { advOpen = $('adv').open; };
   $('lenChips').onclick = e => {
     const b = e.target.closest('[data-len]');
@@ -701,10 +713,6 @@ function renderSettings() {
       <p class="small" id="setMsg" aria-live="polite"></p>
     </div>
     <div class="card">
-      <h2>${t('set.pet')}</h2>
-      <div class="chips">${['dragon', 'snail', 'none'].map(k => `<button class="chip" data-pet="${k}" aria-pressed="${(s.pet || 'dragon') === k}">${t('pet.' + k)}</button>`).join('')}</div>
-    </div>
-    <div class="card">
       <h2>${t('set.lang')}</h2>
       <button class="btn" id="langBtn">${t('set.langBtn')}</button>
     </div>
@@ -724,7 +732,6 @@ function renderSettings() {
   };
   $('fast').onchange = onThreshold;
   $('slow').onchange = onThreshold;
-  document.querySelectorAll('[data-pet]').forEach(b => b.onclick = () => { s.pet = b.dataset.pet; persist(); renderSettings(); });
   $('langBtn').onclick = () => { M.setLang(M.lang() === 'cs' ? 'en' : 'cs'); renderChrome(); renderSettings(); };
   $('reset').onclick = () => {
     if (!confirm(t('set.resetConfirm', { name: profile.name }))) return;

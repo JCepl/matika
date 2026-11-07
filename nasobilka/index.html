@@ -67,13 +67,19 @@
   .viz:empty { display: none; }
   .viz svg { display: block; width: 100%; height: auto; }
   .viz .e { fill: var(--line); }
-  .viz .q0 { fill: #4a86e0; }
-  .viz .q1 { fill: #e8933a; }
-  .viz .q2 { fill: #3fae70; }
-  .viz .q3 { fill: #c860b8; }
+  .viz .q { fill: var(--accent); }
+  .viz .n { font-size: 5.5px; fill: var(--muted); opacity: .6; font-variant-numeric: tabular-nums; }
+  .viz .n.on { opacity: 1; }
   .viz .v2 { stroke: var(--bg); stroke-width: 1; opacity: .55; fill: none; }
   .viz .v5 { stroke: var(--bg); stroke-width: 2; opacity: .9; fill: none; }
   .detail-viz { width: 190px; margin: 12px 0 0; }
+
+  /* ---- feedback: stars on a quick correct answer, faint red tint on a mistake ---- */
+  .fx-stars { position: fixed; left: 50%; top: 38%; z-index: 20; pointer-events: none; }
+  .fx-stars span { position: absolute; font-size: 1.8rem; opacity: 0; animation: star .9s ease-out var(--d) forwards; }
+  @keyframes star { 0% { opacity: 0; transform: translate(0, 0) scale(.3); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.2) rotate(40deg); } }
+  .fx-red { position: fixed; inset: 0; z-index: 20; pointer-events: none; background: radial-gradient(circle, rgba(220, 40, 40, 0) 40%, rgba(220, 40, 40, .22) 100%); animation: redfade .9s ease-out forwards; }
+  @keyframes redfade { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
 
   /* ---- summary ---- */
   .summary { max-width: 640px; margin: 0 auto; }

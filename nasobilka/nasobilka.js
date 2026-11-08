@@ -182,15 +182,15 @@ const shuffle = xs => { for (let i = xs.length - 1; i > 0; i--) { const j = Math
 // The problem as a rectangle on a 10×10 lattice: a rows × b columns. Faint lines every 2, and a
 // slightly stronger one after 5 (like a ten-frame), so 7 · 8 can be read as (5 + 2) · (5 + 3).
 function vizHtml(a, b) {
-  const C = 20, W = N * C, M0 = 9;             // M0 = margin for the tiny row/column numbers
+  const C = 20, W = N * C, M0 = 12;             // M0 = margin for the tiny row/column numbers
   let cells = '', nums = '';
   for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
     cells += `<rect class="${r < a && c < b ? 'q' : 'e'}" x="${M0 + c * C + 1}" y="${M0 + r * C + 1}" width="${C - 2}" height="${C - 2}" rx="2"/>`;
   }
   for (let i = 0; i < N; i++) {
     const cls = (i < b ? 'n on' : 'n'), rcls = (i < a ? 'n on' : 'n');
-    nums += `<text class="${cls}" x="${M0 + i * C + C / 2}" y="${M0 - 2.5}" text-anchor="middle">${i + 1}</text>`;
-    nums += `<text class="${rcls}" x="${M0 - 2.5}" y="${M0 + i * C + C / 2 + 2}" text-anchor="end">${i + 1}</text>`;
+    nums += `<text class="${cls}" x="${M0 + i * C + C / 2}" y="${M0 - 3}" text-anchor="middle">${i + 1}</text>`;
+    nums += `<text class="${rcls}" x="${M0 - 3}" y="${M0 + i * C + C / 2 + 2.6}" text-anchor="end">${i + 1}</text>`;
   }
   let lines = '';
   for (const k of [2, 4, 6, 8]) lines += `<path class="v2" d="M${M0 + k * C} ${M0}V${M0 + W}M${M0} ${M0 + k * C}H${M0 + W}"/>`;

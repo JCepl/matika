@@ -22,7 +22,7 @@
   h1 { font-size: 2rem; margin-top: 12px; }
   .lead { color: var(--ink-2); }
   .block { margin: 0 0 16px; }
-  .name-form { display: grid; gap: 12px; margin-top: 16px; }
+  .name-form { display: grid; gap: 12px; margin: 16px 0 24px; }
   .name-form input { max-width: none; width: 100%; font-size: 1.3rem; padding: 14px 16px; border-radius: 14px; }
   .name-form .btn { width: 100%; }
   .me { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
@@ -108,6 +108,7 @@
 
   function render() {
     const t = M.t, me = M.current();
+    const wordProblems = `<a class="app" href="slovni-ulohy/index.html"><span class="ico" aria-hidden="true">?</span><div><h3>${t('app.words')}</h3><p>${t('app.words.d')}</p></div></a>`;
     document.documentElement.lang = M.lang();
     if (!me) {
       $('app').innerHTML = `
@@ -117,6 +118,7 @@
           <input type="text" id="name" maxlength="24" autocomplete="off" autocapitalize="words" enterkeyhint="go" placeholder="${t('u.name')}" aria-label="${t('u.name')}" required>
           <button class="btn primary big" type="submit">${t('u.go')}</button>
         </form>
+        ${wordProblems}
         <div class="row"><span></span><button class="btn ghost" id="lang">${t('u.lang')}</button></div>`;
       $('nameForm').onsubmit = e => {
         e.preventDefault();
@@ -142,7 +144,7 @@
         </div>` : ''}
         <h2>${t('u.apps')}</h2>
         <a class="app" href="nasobilka/index.html">${lattice(7, 8)}<div><h3>${t('app.nasobilka')}</h3><p>${t('app.nasobilka.d')}</p></div></a>
-        <a class="app" href="slovni-ulohy/index.html"><span class="ico" aria-hidden="true">?</span><div><h3>${t('app.words')}</h3><p>${t('app.words.d')}</p></div></a>
+        ${wordProblems}
         <div class="row">
           <button class="btn ghost" id="notMe">${t('u.notMe', { name: M.esc(me.name) })}</button>
           <button class="btn ghost" id="lang">${t('u.lang')}</button>

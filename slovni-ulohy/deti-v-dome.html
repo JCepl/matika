@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Děti v domě · Matika</title>
+<style>
+  :root {
+    color-scheme: light;
+    --ink: #30263c; --muted: #63586c; --line: #e6dbe9; --accent: #624181;
+    --paper: #f7f3f4; --house: #fffaf3; --girl: #804457; --boy: #365d73; --green: #285c47;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; color: var(--ink); background: var(--paper); font: 1rem/1.48 ui-rounded, system-ui, sans-serif; }
+  h1, h2, p { margin: 0; }
+  button, input { font: inherit; }
+  button { cursor: pointer; }
+  button:disabled { opacity: .47; cursor: default; }
+  :is(button, input, a):focus-visible { outline: 3px solid #8355ac; outline-offset: 2px; }
+  header { background: #fff; border-bottom: 1px solid var(--line); }
+  .top, main { width: min(1080px, calc(100% - 1.5rem)); margin-inline: auto; }
+  .top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .25rem .9rem; padding-block: .42rem; }
+  .brand { font-weight: 850; letter-spacing: -.03em; }
+  .nav { display: flex; flex-wrap: wrap; align-items: center; gap: .2rem; }
+  .nav a { display: inline-flex; align-items: center; min-height: 40px; padding-inline: .5rem; border-radius: .55rem; color: var(--accent); font-size: .91rem; font-weight: 730; text-decoration: none; }
+  .nav a[aria-current] { background: #eee3f5; }
+  .nav a:hover { text-decoration: underline; }
+  main { padding-block: 1.25rem 2.5rem; }
+  h1 { font-size: clamp(2.25rem, 5.5vw, 3.65rem); letter-spacing: -.067em; line-height: 1.04; }
+  h2 { font-size: 1.14rem; line-height: 1.24; }
+  .source { color: var(--muted); font-size: .89rem; margin-top: .3rem; }
+  .modes { display: inline-flex; flex-wrap: wrap; gap: .2rem; padding: .18rem; background: #f0e7f4; border: 1px solid var(--line); border-radius: .75rem; }
+  .modes { margin-block: .8rem; }
+  .modes button { min-height: 39px; border: 0; border-radius: .52rem; padding: .3rem .57rem; font-weight: 730; background: transparent; color: var(--muted); }
+  .modes button[aria-pressed="true"] { background: #fff; color: var(--accent); box-shadow: 0 1px 3px #35214522; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .82rem; align-items: start; }
+  .layout.solo { grid-template-columns: minmax(0, 680px); }
+  .stack { display: grid; gap: .82rem; }
+  .card { min-width: 0; background: #fff; border: 1px solid var(--line); border-radius: 1rem; padding: clamp(.72rem, 3vw, 1.18rem); box-shadow: 0 3px 13px #3426470b; }
+  .problem h2 { margin-bottom: .5rem; }
+  .problem p { margin-top: .45rem; }
+  .problem ol { margin: .67rem 0 0; padding-left: 1.25rem; font-weight: 685; }
+  .problem li + li { margin-top: .28rem; }
+  .phrase [role="button"] { padding-block: .04em; border-radius: .25rem; background: #f3e9f6; color: var(--accent); font-weight: 680; cursor: pointer; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .phrase [role="button"][aria-pressed="true"] { background: #e7d5ef; text-decoration: underline; }
+  .phrase [role="button"]:focus-visible { outline: 2px solid #8355ac; outline-offset: 2px; }
+  .guide { color: var(--muted); margin: .35rem 0 .55rem; font-size: .91rem; }
+  .sim-total { font-variant-numeric: tabular-nums; color: var(--muted); font-size: .93rem; font-weight: 740; }
+  .house { max-width: 31rem; margin: .65rem auto .5rem; }
+  .roof {
+    height: 1.8rem;
+    background: repeating-linear-gradient(12deg, #a87e7333 0 1px, transparent 1px 5px), #dfc3b7;
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  }
+  .floors { margin-inline: 1.5%; border: 1px solid #dccabc; background: var(--house); border-radius: .16rem .16rem .64rem .52rem; }
+  .floor { position: relative; min-height: 3.65rem; padding: .4rem .55rem; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .35rem; align-items: center; }
+  .floor + .floor { border-top: 1px dashed #dccabc; }
+  .floor.active { background: #f7eef6; box-shadow: inset 2px 0 #c8a8d2; }
+  .floor-title { font-family: Georgia, serif; font-weight: 700; }
+  .sim-floor { grid-template-columns: 1fr; gap: .3rem; }
+  .floor-head { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; }
+  .floor-total { color: var(--muted); font-size: .82rem; font-weight: 690; font-variant-numeric: tabular-nums; }
+  .schema .floor-total { color: var(--muted); font-weight: 500; }
+  .floor-notes { display: flex; align-items: baseline; gap: .18rem .5rem; flex-wrap: wrap; justify-content: end; }
+  .resident-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4rem; }
+  .counter { display: grid; grid-template-columns: 42px minmax(1.25rem, 2.4rem) 42px; gap: .19rem; justify-content: center; align-items: center; text-align: center; }
+  .counter-label { grid-column: 1 / -1; font-size: .81rem; font-weight: 680; }
+  .children-icons {
+    grid-column: 1 / -1; display: flex; justify-content: center; flex-wrap: wrap;
+    align-content: center; gap: .14rem; min-height: .95rem;
+  }
+  .child-icon { position: relative; width: .72rem; height: .95rem; color: #b47688; }
+  .boys .child-icon { color: #738ea1; }
+  .child-icon::before, .child-icon::after { content: ''; position: absolute; background: currentColor; }
+  .child-icon::before { width: .28rem; height: .28rem; top: .035rem; left: calc(50% - .14rem); border-radius: 50%; }
+  .child-icon::after { inset: .39rem .085rem .055rem; border-radius: .29rem .29rem .15rem .15rem; }
+  .counter.girls { color: var(--girl); }
+  .counter.boys { color: var(--boy); }
+  .counter output { font-weight: 790; font-variant-numeric: tabular-nums; }
+  .counter button { touch-action: manipulation; min-width: 0; min-height: 42px; border: 1px solid #e5d9e7; border-radius: .55rem; background: #fcf8fc; color: var(--accent); font-size: 1.05rem; font-weight: 730; padding: 0; }
+  .counter.girls button { color: var(--girl); border-color: #ead8de; background: #fdf7f9; }
+  .counter.boys button { color: var(--boy); border-color: #d9e4eb; background: #f6fafc; }
+  @media (max-width: 355px) { .counter { grid-template-columns: 38px minmax(1rem, 1.8rem) 38px; } }
+  .schema .floor { min-height: 3.05rem; }
+  .floor-note { color: var(--muted); font-size: .9rem; padding-right: .1rem; }
+  .clues { display: flex; flex-wrap: wrap; gap: .3rem; }
+  .clues button { text-align: left; min-height: 38px; border: 1px solid var(--line); border-radius: .56rem; padding: .24rem .52rem; background: #faf7fc; color: var(--accent); font-size: .86rem; font-weight: 700; }
+  .clues button[aria-pressed="true"] { background: #eee3f4; border-color: #c6a9d6; }
+  .clue-state { min-height: 1.36rem; color: var(--muted); font-size: .85rem; margin-top: .46rem; }
+  .clue-state.match { color: var(--green); font-weight: 740; }
+  .fields { display: grid; gap: .34rem; margin-block: .6rem; }
+  .fields label { display: flex; justify-content: space-between; align-items: center; gap: .4rem; }
+  .fields input { width: 4.2rem; flex-shrink: 0; min-height: 39px; border: 1px solid #d2c4db; border-radius: .48rem; padding: .28rem .45rem; background: #fdfaff; }
+  .fields input[data-correct="yes"] { background: #e6f4ea; border-color: #69a781; }
+  .fields input[data-correct="no"] { background: #fbede2; border-color: #bb8262; }
+  .primary, .secondary { min-height: 41px; padding: .3rem .6rem; border-radius: .54rem; border: 1px solid var(--line); color: var(--accent); background: #f9f4fc; font-weight: 750; }
+  .primary { color: #fff; background: var(--accent); border-color: var(--accent); }
+  #feedback { margin-top: .55rem; padding: .4rem .55rem; border-radius: .52rem; color: var(--accent); background: #f1e9f6; }
+  @media (max-width: 800px) {
+    .layout { grid-template-columns: 1fr; gap: .65rem; }
+    .stack { display: contents; }
+    .problem { order: 0; } #simulator, #schema { order: 1; } .answers { order: 2; }
+  }
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand">Matika</div>
+  <nav class="nav" aria-label="Úlohy"><a href="index.html">Slovní úlohy</a><a href="koralky.html">Korálky</a><a href="parkoviste.html">Parkoviště</a><a href="deti-v-dome.html" aria-current="page">Děti v domě</a><a href="stejna-kniha.html">Stejná kniha</a></nav>
+</div></header>
+<main>
+  <h1>Děti v domě</h1>
+  <p class="source">CERMAT · 2025 · 1. řádný termín · úloha 5</p>
+  <div class="modes" role="group" aria-label="Zobrazení úlohy">
+    <button type="button" data-mode="simulator" aria-pressed="true">Simulátor</button>
+    <button type="button" data-mode="schema" aria-pressed="false">Schéma</button>
+    <button type="button" data-mode="solo" aria-pressed="false">Bez pomůcek</button>
+  </div>
+  <div class="layout" id="layout">
+    <div class="stack">
+      <section class="card problem" aria-labelledby="problem-title">
+        <h2 id="problem-title">Zadání</h2>
+        <p>Ve třech patrech domu bydlí <span class="phrase" data-clue="total">celkem 11 dětí</span>. <span class="phrase" data-clue="lower">V prvním a druhém patře jich bydlí dohromady osm</span>. <span class="phrase" data-clue="onlyGirls">Ve druhém patře bydlí jen dívky</span>.</p>
+        <p><span class="phrase" data-clue="outer">V prvním a třetím patře bydlí dohromady pět chlapců a tři dívky</span>. <span class="phrase" data-clue="boysBelow">Přesně tři chlapci bydlí mimo třetí patro</span>.</p>
+        <ol>
+          <li>Kolik chlapců bydlí ve druhém patře?</li>
+          <li>Kolik dětí bydlí v prvním patře?</li>
+          <li>Kolik dívek bydlí v celém domě?</li>
+        </ol>
+      </section>
+      <section class="card answers" aria-labelledby="answers-title">
+        <h2 id="answers-title">Tvoje odpovědi</h2>
+        <form id="answers">
+          <div class="fields">
+            <label>1. Chlapců ve druhém patře <input name="boys2" type="number" min="0" step="1" inputmode="numeric" required></label>
+            <label>2. Dětí v prvním patře <input name="children1" type="number" min="0" step="1" inputmode="numeric" required></label>
+            <label>3. Dívek v celém domě <input name="girlsTotal" type="number" min="0" step="1" inputmode="numeric" required></label>
+          </div>
+          <button type="submit" class="primary" id="submit">Odevzdat odpovědi</button>
+          <button type="button" class="secondary" id="restart" hidden>Zkusit znovu</button>
+        </form>
+        <p id="feedback" tabindex="-1" hidden></p>
+      </section>
+    </div>
+    <section class="card" id="simulator" aria-labelledby="simulator-title">
+      <h2 id="simulator-title">Zkus si sám</h2>
+      <p class="guide">V každém patře můžeš přidat nebo ubrat dívky a chlapce. Pod domem si ověř jednotlivé podmínky.</p>
+      <p class="sim-total" id="totalCount" aria-live="polite"></p>
+      <div class="house">
+        <div class="roof" aria-hidden="true"></div>
+        <div class="floors" id="simFloors"></div>
+      </div>
+      <div class="clues" id="simClues" role="group" aria-label="Podmínky"></div>
+      <p class="clue-state" id="simState" aria-live="polite"></p>
+    </section>
+    <section class="card schema" id="schema" aria-labelledby="schema-title" hidden>
+      <h2 id="schema-title">Ke kterým patrům údaj patří?</h2>
+      <div class="house">
+        <div class="roof" aria-hidden="true"></div>
+        <div class="floors">
+          <div class="floor" data-floor="3"><strong class="floor-title">3. patro</strong><span class="floor-note">? dětí</span></div>
+          <div class="floor" data-floor="2"><strong class="floor-title">2. patro</strong><span class="floor-notes"><span class="floor-note">Jen dívky</span><span class="floor-total">? dětí</span></span></div>
+          <div class="floor" data-floor="1"><strong class="floor-title">1. patro</strong><span class="floor-note">? dětí</span></div>
+        </div>
+      </div>
+      <div class="clues" id="schemaClues" role="group" aria-label="Podmínky"></div>
+    </section>
+  </div>
+</main>
+<script>
+  const byId = (id) => document.getElementById(id);
+  const clues = {
+    total: { label: 'Celý dům · 11 dětí', floors: [1, 2, 3] },
+    lower: { label: '1. a 2. patro · 8 dětí', floors: [1, 2] },
+    onlyGirls: { label: '2. patro · jen dívky', floors: [2] },
+    outer: { label: '1. a 3. patro · 5 chlapců a 3 dívky', floors: [1, 3] },
+    boysBelow: { label: 'Mimo 3. patro · 3 chlapci', floors: [1, 2] }
+  };
+  const solution = [{ girls: 2, boys: 3 }, { girls: 3, boys: 0 }, { girls: 1, boys: 2 }];
+  const expected = { boys2: 0, children1: 5, girlsTotal: 6 };
+  const residents = Array.from({ length: 3 }, () => ({ girls: 0, boys: 0 }));
+  const modeButtons = [...document.querySelectorAll('[data-mode]')];
+  const residentTypes = [
+    { key: 'girls', label: 'Dívky', singular: 'dívku' },
+    { key: 'boys', label: 'Chlapci', singular: 'chlapce' }
+  ];
+  const phrases = [...document.querySelectorAll('.phrase')];
+  let mode = 'simulator';
+  let selectedClue = 'total';
+
+  function population(floor) {
+    return floor.girls + floor.boys;
+  }
+
+  function total() {
+    return residents.reduce((sum, floor) => sum + population(floor), 0);
+  }
+
+  function conditions() {
+    const [first, second, third] = residents;
+    return {
+      total: total() === 11,
+      lower: population(first) + population(second) === 8,
+      onlyGirls: second.boys === 0 && second.girls > 0,
+      outer: first.boys + third.boys === 5 && first.girls + third.girls === 3,
+      boysBelow: first.boys + second.boys === 3
+    };
+  }
+
+  function changeFloor(index, type, change) {
+    if (change > 0 && total() === 11) return;
+    residents[index][type] = Math.max(0, residents[index][type] + change);
+    renderResidents();
+  }
+
+  function childrenLabel(count) {
+    return count + (count === 1 ? ' dítě' : count >= 2 && count <= 4 ? ' děti' : ' dětí');
+  }
+
+  function renderResidents() {
+    const count = total();
+    byId('totalCount').textContent = 'Dětí v domě: ' + count + ' / 11';
+    for (const [index, floor] of residents.entries()) {
+      const number = index + 1;
+      byId('floor-total-' + number).textContent = childrenLabel(population(floor));
+      for (const { key } of residentTypes) {
+        const suffix = key + number;
+        byId(suffix).value = floor[key];
+        const drawing = byId('drawing-' + suffix);
+        if (drawing.childElementCount !== floor[key]) {
+          drawing.replaceChildren(...Array.from({ length: floor[key] }, () => {
+            const person = document.createElement('span');
+            person.className = 'child-icon';
+            return person;
+          }));
+        }
+        byId('add-' + suffix).disabled = count === 11;
+        byId('remove-' + suffix).disabled = floor[key] === 0;
+      }
+    }
+    const checks = conditions();
+    const state = byId('simState');
+    const matches = checks[selectedClue];
+    state.textContent = Object.values(checks).every(Boolean) ? 'Rozmístění splňuje všechny podmínky.' :
+      clues[selectedClue].label + ' · ' + (matches ? 'splněno' : 'zatím nesplněno');
+    state.classList.toggle('match', matches);
+  }
+
+  function selectClue(key) {
+    selectedClue = key;
+    for (const floor of document.querySelectorAll('[data-floor]')) {
+      floor.classList.toggle('active', clues[key].floors.includes(Number(floor.dataset.floor)));
+    }
+    for (const button of document.querySelectorAll('[data-condition]')) {
+      button.setAttribute('aria-pressed', String(button.dataset.condition === key));
+    }
+    renderResidents();
+  }
+
+  function createClueButton(key, text) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.dataset.condition = key;
+    button.textContent = text;
+    button.addEventListener('click', () => selectClue(key));
+    return button;
+  }
+
+  for (const number of [3, 2, 1]) {
+    const floor = document.createElement('div');
+    floor.className = 'floor sim-floor';
+    floor.dataset.floor = number;
+    const heading = document.createElement('div');
+    heading.className = 'floor-head';
+    const title = document.createElement('strong');
+    title.className = 'floor-title';
+    title.textContent = number + '. patro';
+    const totalInFloor = document.createElement('span');
+    totalInFloor.className = 'floor-total';
+    totalInFloor.id = 'floor-total-' + number;
+    heading.append(title, totalInFloor);
+    const controls = document.createElement('div');
+    controls.className = 'resident-controls';
+
+    for (const { key, label, singular } of residentTypes) {
+      const suffix = key + number;
+      const counter = document.createElement('div');
+      counter.className = 'counter ' + key;
+      counter.innerHTML = '<span class="counter-label" id="label-' + suffix + '">' + label + '</span>' +
+        '<button type="button" id="remove-' + suffix + '" aria-label="Odebrat ' + singular + ' z ' + number + '. patra">−</button>' +
+        '<output id="' + suffix + '" aria-labelledby="label-' + suffix + '"></output>' +
+        '<button type="button" id="add-' + suffix + '" aria-label="Přidat ' + singular + ' do ' + number + '. patra">+</button>' +
+        '<div class="children-icons" id="drawing-' + suffix + '" aria-hidden="true"></div>';
+      counter.querySelector('#remove-' + suffix).addEventListener('click', () => changeFloor(number - 1, key, -1));
+      counter.querySelector('#add-' + suffix).addEventListener('click', () => changeFloor(number - 1, key, 1));
+      controls.append(counter);
+    }
+    floor.append(heading, controls);
+    byId('simFloors').append(floor);
+  }
+
+  // Older iOS WebKit builds may still zoom on a double tap despite touch-action.
+  const floorControls = byId('simFloors');
+  let startedTap = null;
+  let previousTap = null;
+
+  floorControls.addEventListener('touchstart', (event) => {
+    const button = event.target.closest('.counter button');
+    const touch = event.touches[0];
+    startedTap = button && event.touches.length === 1
+      ? { button, x: touch.clientX, y: touch.clientY }
+      : null;
+    if (!startedTap) previousTap = null;
+  }, { passive: true });
+
+  floorControls.addEventListener('touchcancel', () => {
+    startedTap = null;
+    previousTap = null;
+  });
+
+  floorControls.addEventListener('touchend', (event) => {
+    const start = startedTap;
+    startedTap = null;
+    const touch = event.changedTouches[0];
+    if (!start || event.touches.length || event.changedTouches.length !== 1 ||
+        Math.hypot(touch.clientX - start.x, touch.clientY - start.y) > 8) {
+      previousTap = null;
+      return;
+    }
+    const time = event.timeStamp;
+    if (previousTap?.button === start.button && time - previousTap.time < 350 && event.cancelable) {
+      event.preventDefault();
+      start.button.click();
+    }
+    previousTap = { button: start.button, time };
+  }, { passive: false });
+
+  for (const list of [byId('simClues'), byId('schemaClues')]) {
+    for (const [key, clue] of Object.entries(clues)) {
+      list.append(createClueButton(key, clue.label));
+    }
+  }
+
+  function setMode(nextMode) {
+    mode = nextMode;
+    byId('simulator').hidden = mode !== 'simulator';
+    byId('schema').hidden = mode !== 'schema';
+    byId('layout').classList.toggle('solo', mode === 'solo');
+    for (const button of modeButtons) {
+      button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+    }
+    for (const phrase of phrases) {
+      const wording = phrase.textContent;
+      if (mode === 'solo') phrase.textContent = wording;
+      else {
+        const control = document.createElement('span');
+        control.setAttribute('role', 'button');
+        control.tabIndex = 0;
+        control.dataset.condition = phrase.dataset.clue;
+        control.textContent = wording;
+        control.addEventListener('click', () => selectClue(control.dataset.condition));
+        control.addEventListener('keydown', (event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          if (!event.repeat) control.click();
+        });
+        phrase.replaceChildren(control);
+      }
+    }
+    selectClue(selectedClue);
+  }
+
+  for (const button of modeButtons) {
+    button.addEventListener('click', () => setMode(button.dataset.mode));
+  }
+  const form = byId('answers');
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    let correctly = 0;
+    for (const [name, value] of Object.entries(expected)) {
+      const field = form.elements[name];
+      const correct = Number(field.value) === value;
+      if (correct) correctly++;
+      field.dataset.correct = correct ? 'yes' : 'no';
+      field.readOnly = true;
+    }
+    for (const [index, floor] of solution.entries()) Object.assign(residents[index], floor);
+    byId('submit').hidden = true;
+    byId('restart').hidden = false;
+    setMode('simulator');
+    const feedback = byId('feedback');
+    feedback.textContent = (correctly === 3 ? 'Všechny odpovědi jsou správně.' : 'Správně ' + correctly + ' ze 3.') + ' Správné rozmístění si můžeš ověřit v domě.';
+    feedback.hidden = false;
+    feedback.focus();
+  });
+
+  byId('restart').addEventListener('click', () => {
+    form.reset();
+    for (const name of Object.keys(expected)) {
+      form.elements[name].readOnly = false;
+      delete form.elements[name].dataset.correct;
+    }
+    for (const floor of residents) Object.assign(floor, { girls: 0, boys: 0 });
+    byId('submit').hidden = false;
+    byId('restart').hidden = true;
+    byId('feedback').hidden = true;
+    renderResidents();
+    form.elements.boys2.focus();
+  });
+
+  setMode('simulator');
+</script>
+</body>
+</html>

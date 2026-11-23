@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stejná kniha · Matika</title>
+<link rel="stylesheet" href="ulohy.css">
+<script defer src="stejna-kniha.js"></script>
+</head>
+<body>
+<header>
+  <div class="shell top">
+    <a class="brand" href="../index.html">Matika</a>
+    <nav class="task-nav" aria-label="Úlohy"><a href="index.html">Slovní úlohy</a><a href="koralky.html">Korálky</a><a href="parkoviste.html">Parkoviště</a><a href="deti-v-dome.html">Děti v domě</a><a href="stejna-kniha.html" aria-current="page">Stejná kniha</a></nav>
+  </div>
+</header>
+<main class="shell">
+  <div id="task">
+    <h1>Stejná kniha</h1>
+    <p class="source">CERMAT · 2020 · řádný termín · úloha 9</p>
+    <div class="modes" role="group" aria-label="Zobrazení úlohy">
+      <button type="button" data-mode="simulator" aria-pressed="true">Simulátor</button>
+      <button type="button" data-mode="schema" aria-pressed="false">Schéma</button>
+      <button type="button" data-mode="solo" aria-pressed="false">Bez pomůcek</button>
+    </div>
+    <div class="layout" id="layout">
+      <div class="task-column">
+        <section class="card problem">
+          <h2>Zadání</h2>
+          <p>Hana a Adéla čtou stejnou knihu. Hana přečte každý den 10 stran. Adéla denně přečte o polovinu více stran než Hana a celou knihu dočte za 8 dní.</p>
+          <ol class="questions"><li>Za kolik dní přečte knihu Hana?</li></ol>
+        </section>
+        <section class="card answers">
+          <h2>Tvoje odpověď</h2>
+          <form id="answers">
+            <div class="inputs"><label><span>Hana dočte za (dny)</span><input id="days" name="days" type="number" inputmode="numeric" min="0" step="1" required></label></div>
+            <button type="submit" class="primary" id="submit">Odevzdat</button>
+            <button type="button" class="secondary" id="retry" hidden>Zkusit znovu</button>
+          </form>
+          <p id="feedback" tabindex="-1" hidden></p>
+        </section>
+      </div>
+      <section class="card support" id="simulator">
+        <h2>Zkus si sám</h2>
+        <p class="guide">Každý krok posuvníku je jeden den čtení.</p>
+        <div class="controls">
+          <label>
+            <span class="control-label"><span>Dny čtení</span><output id="value" for="model">1 den</output></span>
+            <input id="model" type="range" min="0" max="16" step="1" value="1" aria-label="Dny čtení">
+          </label>
+        </div>
+        <div class="scene" id="scene" aria-live="polite"></div>
+      </section>
+      <section class="card support" id="schema" hidden>
+        <h2>Dvoje tempo, jedna kniha</h2>
+        <div class="schema-row"><strong>Hana za jeden den</strong><p>10 stran.</p></div>
+        <div class="schema-row"><strong>Adéla za jeden den</strong><p>Haniny strany a ještě polovina z nich.</p></div>
+        <div class="schema-row"><strong>Celá kniha</strong><p>Adéliných osm dní a Haniny neznámé dny musí dát stejný počet stran.</p></div>
+      </section>
+    </div>
+  </div>
+</main>
+</body>
+</html>

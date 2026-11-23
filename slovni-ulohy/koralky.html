@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Korálky · Matika</title>
+<style>
+  :root {
+    color-scheme: light;
+    --ink: #25233b; --muted: #5f5b72; --line: #e6e0ef; --purple: #5734aa;
+    --pink: #932555; --pink-bg: #f9e3ee;
+    --mint: #176451; --mint-bg: #def5e9;
+    --blue: #244f98; --blue-bg: #e3edff;
+    --gold: #744600; --gold-bg: #ffefc8;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f6f3fb; color: var(--ink); font: 1rem/1.55 ui-rounded, system-ui, sans-serif; }
+  button, input { font: inherit; }
+  button, summary { cursor: pointer; }
+  button, input, summary { border-radius: .65rem; }
+  button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid #8154d8; outline-offset: 3px; }
+  button:disabled { cursor: default; opacity: .55; }
+  [hidden] { display: none !important; }
+  header { background: #fff; border-bottom: 1px solid var(--line); }
+  .top, main { width: min(1120px, calc(100% - 2rem)); margin-inline: auto; }
+  .top { min-height: 4.2rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .65rem; padding-block: .65rem; }
+  .brand { display: flex; gap: .6rem; align-items: center; font-weight: 850; letter-spacing: -.03em; }
+  .brand-mark { display: flex; gap: .18rem; align-items: center; background: #eee8ff; padding: .5rem; border-radius: .65rem; }
+  .brand-mark i { width: .48rem; height: .48rem; border-radius: 50%; background: #7452bd; }
+  .brand-mark i:nth-child(2) { background: #e573a4; }
+  .brand-mark i:nth-child(3) { background: #2c927b; }
+  .task-nav { display: flex; flex-wrap: wrap; align-items: center; gap: .2rem; }
+  .task-nav a { display: inline-flex; align-items: center; min-height: 44px; padding-inline: .55rem; color: var(--purple); border-radius: .55rem; font-weight: 700; text-decoration: none; }
+  .task-nav a[aria-current] { background: #f1eaff; }
+  .task-nav a:hover { text-decoration: underline; }
+  .modes { display: flex; gap: .2rem; padding: .2rem; border: 1px solid var(--line); border-radius: .8rem; background: #f6f3fa; }
+  .modes button { min-height: 44px; border: 0; padding: .4rem .7rem; background: transparent; color: var(--muted); font-weight: 680; }
+  .modes button[aria-pressed="true"] { background: white; color: var(--purple); box-shadow: 0 1px 4px #3828601a; }
+  main { padding-block: 1.9rem 3rem; }
+  h1, h2, h3, p { margin: 0; }
+  h1 { font-size: clamp(2.45rem, 6vw, 4rem); letter-spacing: -.075em; line-height: 1.04; }
+  h2 { font-size: 1.22rem; line-height: 1.3; letter-spacing: -.025em; }
+  .hero { margin-bottom: 1.35rem; }
+  .hero p { color: var(--muted); margin-top: .35rem; }
+  .layout { display: grid; grid-template-columns: 1fr 1.07fr; align-items: start; gap: 1.15rem; }
+  .layout.solo { grid-template-columns: minmax(0, 720px); }
+  .stack { display: grid; gap: 1rem; min-width: 0; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 1.15rem; padding: clamp(.95rem, 3vw, 1.35rem); box-shadow: 0 4px 18px #36235308; }
+  .problem { font-size: 1.08rem; }
+  .problem h2, .answers h2 { margin-bottom: .65rem; }
+  .problem p + p { margin-top: .8rem; }
+  .phrase { --accent: var(--pink); --soft: var(--pink-bg); }
+  .times { --accent: var(--mint); --soft: var(--mint-bg); }
+  .known { --accent: var(--blue); --soft: var(--blue-bg); }
+  .pattern { --accent: var(--gold); --soft: var(--gold-bg); }
+  .phrase [role="button"] { color: var(--accent); background: var(--soft); border-radius: .28rem; padding-block: .06em; font-weight: 740; cursor: pointer; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .phrase [role="button"]:focus-visible, .phrase [aria-pressed="true"] { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .questions { padding-left: 1.3rem; margin: .95rem 0 0; }
+  .questions li + li { margin-top: .5rem; }
+  .panel { padding: 0; }
+  summary { padding: 1rem 1.2rem; font-size: 1.08rem; font-weight: 780; }
+  summary::marker { color: var(--purple); }
+  .panel-body { padding: 0 1.15rem 1.1rem; }
+  .panel-body > p, .muted { color: var(--muted); }
+  .thread { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr); gap: .28rem; align-items: center; margin: .85rem 0; }
+  .group { text-align: center; border: 2px solid #eee7f4; border-radius: .72rem; min-width: 0; padding: .55rem .12rem; background: #faf8fc; }
+  .group small { display: block; color: var(--muted); white-space: nowrap; font-size: clamp(.64rem, 1.6vw, .8rem); }
+  .group strong { display: block; font-size: 1.45rem; line-height: 1.22; }
+  #diagram[data-highlight="groups"] .group { background: var(--pink-bg); border-color: #d870a0; color: var(--pink); }
+  .schema-times { color: var(--mint); background: var(--mint-bg); border-radius: .36rem; padding: .1rem .24rem; white-space: nowrap; font-size: .79rem; font-weight: 760; }
+  #diagram[data-highlight="times"] .schema-times { outline: 2px solid #84b7a6; }
+  #diagram[data-highlight="known"] .group.known { background: var(--blue-bg); border-color: #81a5eb; color: var(--blue); }
+  #diagram[data-highlight="fourth"] .group:last-child { background: var(--gold-bg); border-color: #bf8d36; color: var(--gold); }
+  .cue { font-size: .92rem; }
+  .cue:not(:empty) { margin-top: .45rem; }
+  .sim-tools { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-block: .75rem .55rem; }
+  .sim-tools button { min-height: 44px; }
+  .sim-tools .add-bead { background: var(--pink-bg); color: var(--pink); border-color: #edc9db; }
+  .secondary { border: 1px solid #d8cbea; color: var(--purple); background: #f9f6ff; padding: .42rem .68rem; font-weight: 730; }
+  .sim-strand {
+    position: relative;
+    margin-top: .85rem;
+    padding: .5rem .55rem;
+    border: 1px solid #e1d2bd;
+    border-radius: 1.2rem .8rem 1.15rem .86rem;
+    background: radial-gradient(circle, #88694c25 .7px, transparent .95px) 0 0 / 12px 12px, #fbf5eb;
+    box-shadow: inset 0 0 24px #ac7d3b0b;
+  }
+  .cord { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+  .bin-label, .batch { position: relative; z-index: 2; }
+  .bin-totals { display: grid; justify-items: end; gap: .17rem; text-align: right; }
+  .total { display: flex; align-items: baseline; gap: .32rem; }
+  .total small { font-size: .76rem; color: #675a56; }
+  .color-counts { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: .2rem .65rem; color: #675a56; font-size: .8rem; line-height: 1.3; }
+  .color-counts span { display: inline-flex; align-items: center; gap: .19rem; }
+  .color-counts span::before {
+    content: '';
+    width: .33rem;
+    height: .33rem;
+    flex: 0 0 .33rem;
+    border: 1px solid #675968;
+    border-radius: 50%;
+    background: #302638;
+  }
+  .color-counts span:last-child::before { background: #fffaf5; }
+  .color-counts b { font-weight: 650; color: var(--ink); }
+  .fourth-bin .color-counts span:first-child { color: var(--gold); }
+  .sim-strand[data-highlight="fourth"] .fourth-bin .color-counts span:first-child { background: var(--gold-bg); border-radius: .3rem; }
+  .sim-schema {
+    padding: .7rem .75rem .65rem;
+    border: 1px solid #ecdfed;
+    border-radius: .85rem;
+    background: #fcf9fe;
+  }
+  .sim-schema .thread { margin: .48rem 0 0; }
+  .sim-schema .group { border-color: #f1d9e5; background: #fff7fb; }
+  .sim-schema .group.known { border-color: #d9e5f8; background: #f1f6ff; }
+  .sim-hint { margin-top: .2rem; }
+  .bead { display: inline-block; flex: 0 0 auto; border-radius: 50%; }
+  .bin {
+    --bead-size: clamp(.59rem, 2.5vw, .89rem);
+    position: relative;
+    min-width: 0;
+    padding: .55rem .72rem .62rem;
+    border: 1px solid #cbafb9;
+    border-radius: .68rem .9rem .64rem .84rem;
+    background: #fffaf5a6;
+  }
+  .bin:nth-child(4n) { border-radius: .83rem .59rem .87rem .65rem; }
+  .bin-label { display: flex; align-items: start; justify-content: space-between; gap: .45rem; }
+  .bin-label output { font: 700 1.28rem/1 Georgia, serif; font-variant-numeric: lining-nums tabular-nums; }
+  .bin-title { margin: .13rem 0 0 .2rem; color: var(--pink); font: 700 1.03rem/1.15 Georgia, serif; }
+  .bin-title::after { content: ''; display: block; width: 90%; height: 2px; margin-top: .18rem; border-radius: 50%; background: #931f5338; transform: rotate(-2deg); }
+  #simPanel > summary { font-family: Georgia, serif; font-size: 1.2rem; }
+  .step-link { display: flex; justify-content: flex-end; align-items: center; min-height: 1.5rem; padding-inline-end: .7rem; }
+  .step-link span { position: relative; z-index: 2; margin-right: .12rem; color: var(--mint); font: italic 700 .91rem/1 Georgia, serif; }
+  .beads { margin-top: .22rem; min-height: 1.2rem; }
+  .strand-row { display: flex; position: relative; align-items: center; gap: .25rem; min-height: calc(var(--bead-size) + .32rem); padding: 0 .18rem; }
+  .strand-row:nth-child(even) { flex-direction: row-reverse; }
+  .strung-beads { width: max-content; max-width: 100%; padding-inline: .3rem; }
+  .batch { display: inline-flex; flex: 0 0 auto; gap: .09rem; position: relative; }
+  .strand-row:nth-child(even) .batch { flex-direction: row-reverse; }
+  .bin .bead { width: var(--bead-size); height: var(--bead-size); border: 1px solid; }
+  .bin .bead.black { border-color: #20192b; background: radial-gradient(circle at 33% 28%, #8d8198 0%, #494054 33%, #231b30 78%); }
+  .bin .bead.white { border-color: #8b818e; background: radial-gradient(circle at 32% 26%, #fff 0%, #f9f5fa 42%, #d5cbd7 86%); }
+  .sim-strand[data-highlight="fourth"] #beads4 .white { opacity: .55; }
+  .fourth-bin { border-color: #baa06f; background: #fff6dfb0; }
+  .group small { color: var(--pink); }
+  .group.known strong { color: var(--blue); }
+  .count-known { color: var(--blue); background: var(--blue-bg); border-radius: .35rem; padding-inline: .35rem; }
+  .pattern-dots { display: inline-flex; gap: .12rem; align-items: center; white-space: nowrap; color: #302a38; }
+  .schema-pattern { display: flex; align-items: baseline; flex-wrap: wrap; gap: .3rem .55rem; margin-top: .5rem; color: var(--gold); font-size: .9rem; }
+  .schema-pattern .pattern-dots { align-self: center; }
+  #diagram[data-highlight="pattern"] .schema-pattern { background: var(--gold-bg); border-radius: .35rem; }
+  .pattern-dots span { width: .58rem; height: .58rem; border-radius: 50%; background: currentColor; }
+  .pattern-dots span:nth-child(5n) { background: #fff; border: 1px solid #8b818e; }
+  .sim-strand[data-highlight="groups"] .bin { border-color: #d870a0; }
+  .sim-strand[data-highlight="groups"] .bin-title { color: var(--pink); }
+  .sim-strand[data-highlight="times"] .step-link span { outline: 2px solid #84b7a6; }
+  .sim-strand[data-highlight="fourth"] .fourth-bin, .sim-strand[data-highlight="pattern"] .fourth-bin { box-shadow: 0 0 0 2px #d5a344; }
+  #simCounts { margin-top: .6rem; }
+  #colorKey { margin: .35rem 0 .55rem; font-size: .94rem; color: var(--gold); }
+  .pop { animation: appear .32s both; animation-delay: var(--delay, 0s); }
+  @keyframes appear { from { opacity: 0; transform: scale(.55); } to { opacity: 1; transform: scale(1); } }
+  .fields { display: grid; gap: .55rem; margin-bottom: .85rem; }
+  .fields label { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+  .fields input { width: 6rem; flex: 0 0 6rem; border: 1px solid #cfc4de; padding: .4rem .55rem; background: #fcfaff; }
+  .fields input[readonly] { color: var(--muted); }
+  .fields input[data-result="yes"] { border-color: #359578; background: #e6f6ed; }
+  .fields input[data-result="no"] { border-color: #bd6b46; background: #fff0e6; }
+  .actions { display: flex; flex-wrap: wrap; gap: .55rem; }
+  .primary { background: var(--purple); border: 1px solid var(--purple); color: #fff; padding: .54rem .85rem; font-weight: 770; }
+  #feedback { margin-top: .75rem; border-radius: .62rem; padding: .55rem .72rem; background: #f0e9ff; color: #402779; }
+  @media (min-width: 801px) and (min-height: 700px) { .layout > .stack:first-child { position: sticky; top: 1rem; } }
+  @media (max-width: 800px) { .layout { grid-template-columns: 1fr; } .layout > .stack:first-child { display: contents; } .problem { order: 0; } #supports { order: 1; } .answers { order: 2; } }
+  @media (max-width: 490px) {
+    .sim-schema .thread { gap: .16rem; }
+    .schema-times { padding-inline: .16rem; font-size: .72rem; }
+    .sim-schema .group small { white-space: normal; line-height: 1.15; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .001s !important; animation-delay: 0s !important; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <div class="brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>Matika</div>
+    <nav class="task-nav" aria-label="Úlohy"><a href="index.html">Slovní úlohy</a><a href="koralky.html" aria-current="page">Korálky</a><a href="parkoviste.html">Parkoviště</a><a href="deti-v-dome.html">Děti v domě</a><a href="stejna-kniha.html">Stejná kniha</a></nav>
+    <div class="modes" role="group" aria-label="Zobrazení úlohy">
+      <button type="button" data-mode="simulator" aria-pressed="true">Simulátor</button>
+      <button type="button" data-mode="schema" aria-pressed="false">Schéma</button>
+      <button type="button" data-mode="solo" aria-pressed="false">Bez pomůcek</button>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="hero"><h1>Korálky</h1><p>CERMAT · 2025 · 2. řádný termín · úloha 3</p></div>
+  <div class="layout" id="layout">
+    <div class="stack">
+      <section class="card problem" aria-labelledby="task-title">
+        <h2 id="task-title">Zadání</h2>
+        <p>Na šňůrce jsou <span class="phrase" data-phrase="groups">čtyři skupiny</span> korálků.
+          V každé další skupině je <span class="phrase times" data-phrase="times">čtyřnásobek počtu korálků</span> z předchozí skupiny.
+          <span class="phrase known" data-phrase="known">Ve třetí skupině je 32 korálků</span>.</p>
+        <ol class="questions">
+          <li>Kolik korálků je na celé šňůrce?</li>
+          <li>Kolikrát tolik korálků je ve čtvrté skupině než ve druhé?</li>
+          <li>Pokud se <span class="phrase pattern" data-phrase="pattern">od začátku šňůrky střídají vždy čtyři černé korálky a jeden bílý</span>, kolik černých je <span class="phrase pattern" data-phrase="fourth">ve čtvrté skupině</span>?</li>
+        </ol>
+      </section>
+      <section class="card answers" aria-labelledby="answer-title">
+        <h2 id="answer-title">Tvoje odpovědi</h2>
+        <form id="answerForm">
+          <div class="fields">
+            <label>1. Korálků celkem <input name="total" type="number" min="0" step="1" inputmode="numeric" required></label>
+            <label>2. Kolikrát tolik <input name="factor" type="number" min="0" step="1" inputmode="numeric" required></label>
+            <label>3. Černých ve čtvrté skupině <input name="black" type="number" min="0" step="1" inputmode="numeric" required></label>
+          </div>
+          <div class="actions">
+            <button class="primary" id="submit" type="submit">Odevzdat odpovědi</button>
+            <button class="secondary" id="restart" type="button" hidden>Zkusit znovu</button>
+          </div>
+        </form>
+        <p id="feedback" tabindex="-1" hidden></p>
+      </section>
+    </div>
+    <aside class="stack" id="supports" aria-label="Pomůcky">
+      <details class="card panel" id="schemaPanel" open hidden>
+        <summary>Schéma</summary>
+        <div class="panel-body">
+          <section class="sim-schema" id="diagram" aria-labelledby="schemaTitle">
+            <h2 id="schemaTitle">Jak se šňůrka skládá</h2>
+            <p class="schema-pattern">
+              <span>Čtyři černé, pak jeden bílý.</span>
+              <span class="pattern-dots" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span>
+            </p>
+          <div class="thread" aria-label="Čtyři skupiny. Mezi každými dvěma je zleva doprava šipka krát čtyři. Ve třetí je 32 korálků.">
+            <div class="group"><small>1. skupina</small><strong>?</strong></div>
+            <span class="schema-times" aria-hidden="true">×4 →</span>
+            <div class="group"><small>2. skupina</small><strong>?</strong></div>
+            <span class="schema-times" aria-hidden="true">×4 →</span>
+            <div class="group known"><small>3. skupina</small><strong>32</strong></div>
+            <span class="schema-times" aria-hidden="true">×4 →</span>
+            <div class="group"><small>4. skupina</small><strong>?</strong></div>
+          </div>
+          <p class="cue" id="schemaCue" aria-live="polite"></p>
+          </section>
+        </div>
+      </details>
+      <details class="card panel" id="simPanel" open>
+        <summary>Zkus si sám</summary>
+        <div class="panel-body">
+          <p class="sim-hint">Přidej korálek do první skupiny a sleduj celou šňůrku.</p>
+          <div class="sim-tools">
+            <button type="button" class="secondary add-bead" id="addBead">+ Přidat korálek</button>
+            <button type="button" class="secondary" id="removeBead" aria-label="Ubrat jeden korálek">− Ubrat</button>
+            <button type="button" class="secondary" id="resetBeads">Vynulovat</button>
+          </div>
+          <p id="colorKey">Po celé šňůrce se opakují čtyři černé a jeden bílý
+            <span class="pattern-dots" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span>.
+          </p>
+          <p class="cue" id="simCue" aria-live="polite"></p>
+          <div class="sim-strand" id="simStrand">
+            <canvas class="cord" id="cord" aria-hidden="true"></canvas>
+            <div class="bin"><div class="bin-label"><strong class="bin-title">1. skupina</strong><div class="bin-totals"><div class="total"><small>Celkem</small><output id="count1"></output></div><p class="color-counts"><span>Černé <b id="black1">0</b></span><span>Bílé <b id="white1">0</b></span></p></div></div><div class="beads" id="beads1" aria-hidden="true"></div></div>
+            <div class="step-link" aria-hidden="true"><span>↓ ×4</span></div>
+            <div class="bin"><div class="bin-label"><strong class="bin-title">2. skupina</strong><div class="bin-totals"><div class="total"><small>Celkem</small><output id="count2"></output></div><p class="color-counts"><span>Černé <b id="black2">0</b></span><span>Bílé <b id="white2">0</b></span></p></div></div><div class="beads" id="beads2" aria-hidden="true"></div></div>
+            <div class="step-link" aria-hidden="true"><span>↓ ×4</span></div>
+            <div class="bin"><div class="bin-label"><strong class="bin-title">3. skupina</strong><div class="bin-totals"><div class="total"><small>Celkem</small><output id="count3"></output></div><p class="color-counts"><span>Černé <b id="black3">0</b></span><span>Bílé <b id="white3">0</b></span></p></div></div><div class="beads" id="beads3" aria-hidden="true"></div></div>
+            <div class="step-link" aria-hidden="true"><span>↓ ×4</span></div>
+            <div class="bin fourth-bin"><div class="bin-label" id="fourthHeading"><strong class="bin-title">4. skupina</strong><div class="bin-totals"><div class="total"><small>Celkem</small><output id="count4"></output></div><p class="color-counts"><span>Černé <b id="black4">0</b></span><span>Bílé <b id="white4">0</b></span></p></div></div><div class="beads" id="beads4" aria-hidden="true"></div></div>
+          </div>
+          <p class="muted" id="simCounts" aria-live="polite"></p>
+        </div>
+      </details>
+    </aside>
+  </div>
+</main>
+<script>
+  const byId = (id) => document.getElementById(id);
+  const phrases = [...document.querySelectorAll('[data-phrase]')];
+  const modeButtons = [...document.querySelectorAll('[data-mode]')];
+  const simulator = byId('simPanel');
+  const schema = byId('schemaPanel');
+  const explanations = {
+    groups: 'Růžové popisky označují čtyři skupiny na šňůrce.',
+    times: 'K jednomu korálku v předchozí skupině patří čtyři v další.',
+    known: 'Číslo 32 patří jen ke třetí skupině.',
+    pattern: 'Barevný vzor pokračuje z jedné skupiny do druhé.',
+    fourth: 'V poslední skupině počítáme jen černé korálky.'
+  };
+
+  let activePhrase = '';
+  let beadCount = 1;
+  let submitted = false;
+  let mode = 'simulator';
+
+  function highlight(key) {
+    byId('diagram').dataset.highlight = key;
+    byId('simStrand').dataset.highlight = key;
+    const schemaHint = key === 'times' ? 'Porovnej dvě sousední skupiny.' : explanations[key] || '';
+    byId('schemaCue').textContent = mode === 'schema' ? schemaHint : '';
+    byId('simCue').textContent = mode === 'simulator' ? explanations[key] || '' : '';
+    for (const phrase of phrases) {
+      const button = phrase.querySelector('[role="button"]');
+      if (button) button.setAttribute('aria-pressed', String(phrase.dataset.phrase === activePhrase));
+    }
+  }
+
+  function renderMode() {
+    const solo = mode === 'solo';
+    byId('supports').hidden = solo;
+    byId('layout').classList.toggle('solo', solo);
+    simulator.hidden = mode !== 'simulator';
+    schema.hidden = mode !== 'schema';
+    if (mode === 'simulator') simulator.open = true;
+    if (mode === 'schema') schema.open = true;
+    for (const button of modeButtons) {
+      button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+    }
+    for (const phrase of phrases) {
+      const wording = phrase.textContent;
+      if (solo) {
+        phrase.textContent = wording;
+        continue;
+      }
+      const key = phrase.dataset.phrase;
+      const button = document.createElement('span');
+      button.setAttribute('role', 'button');
+      button.tabIndex = 0;
+      button.textContent = wording;
+      const usesColor = key === 'pattern' || key === 'fourth';
+      button.setAttribute('aria-controls', mode === 'simulator' ? 'simPanel' : 'schemaPanel');
+      button.addEventListener('pointerenter', () => highlight(key));
+      button.addEventListener('pointerleave', () => highlight(activePhrase));
+      button.addEventListener('click', () => {
+        activePhrase = activePhrase === key ? '' : key;
+        highlight(activePhrase);
+        if (activePhrase) {
+          if (mode === 'schema') schema.open = true;
+          if (mode === 'simulator') {
+            simulator.open = true;
+            if (usesColor || key === 'times') {
+              if (beadCount === 0) changeBeads(1);
+              else renderBeads(key === 'times');
+              if (key === 'fourth') byId('fourthHeading').closest('.bin').scrollIntoView({ block: 'center' });
+            }
+          }
+        }
+      });
+      button.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        if (!event.repeat) button.click();
+      });
+      phrase.replaceChildren(button);
+    }
+    highlight(activePhrase);
+  }
+
+  for (const button of modeButtons) {
+    button.addEventListener('click', () => {
+      mode = button.dataset.mode;
+      activePhrase = '';
+      renderMode();
+    });
+  }
+
+  function makeBead() {
+    const bead = document.createElement('span');
+    bead.className = 'bead';
+    return bead;
+  }
+
+  function isWhite(position) {
+    return position % 5 === 0;
+  }
+
+  const maxStartingBeads = 5;
+  const wideStrand = matchMedia('(min-width: 1050px), (min-width: 550px) and (max-width: 800px)');
+
+  function renderBeads(animate = false) {
+    const groupSizes = [1, 4, 16, 64].map((size) => size * beadCount);
+    const batchesPerRow = wideStrand.matches ? 6 : 4;
+    let position = 0;
+
+    for (const [group, size] of groupSizes.entries()) {
+      const groupNumber = group + 1;
+      const bin = byId('beads' + groupNumber);
+      let whiteCount = 0;
+      bin.replaceChildren();
+      const count = byId('count' + (group + 1));
+      count.value = size;
+      count.classList.toggle('count-known', group === 2 && size === 32);
+      const strand = document.createElement('div');
+      strand.className = 'strung-beads';
+      const batchSize = group === 0 ? 1 : 4;
+      const batchCount = size / batchSize;
+      let row;
+      for (let index = 0; index < batchCount; index++) {
+        if (index % batchesPerRow === 0) {
+          row = document.createElement('div');
+          row.className = 'strand-row';
+          strand.append(row);
+        }
+        const batch = document.createElement('span');
+        batch.className = 'batch';
+        if (animate) {
+          batch.classList.add('pop');
+          batch.style.setProperty('--delay', (group * 0.29 + Math.min(index, 6) * 0.019) + 's');
+        }
+        for (let beadIndex = 0; beadIndex < batchSize; beadIndex++) {
+          position++;
+          const bead = makeBead();
+          const white = isWhite(position);
+          if (white) whiteCount++;
+          bead.classList.add(white ? 'white' : 'black');
+          batch.append(bead);
+        }
+        row.append(batch);
+      }
+      bin.append(strand);
+      byId('black' + groupNumber).textContent = size - whiteCount;
+      byId('white' + groupNumber).textContent = whiteCount;
+    }
+    drawCord();
+    byId('simCounts').textContent = 'Počty od první do čtvrté skupiny: ' + groupSizes.join(' → ') + '.';
+    byId('addBead').disabled = beadCount === maxStartingBeads;
+    byId('removeBead').disabled = beadCount === 0;
+    byId('resetBeads').disabled = beadCount === 0;
+  }
+
+  // Draw one cord behind the beads, including the turns and gaps between groups.
+  function drawCord() {
+    const canvas = byId('cord');
+    const strand = byId('simStrand');
+    const area = canvas.getBoundingClientRect();
+    if (!area.width || !area.height) return;
+
+    const density = window.devicePixelRatio || 1;
+    canvas.width = Math.round(area.width * density);
+    canvas.height = Math.round(area.height * density);
+    const context = canvas.getContext('2d');
+    if (!context) return;
+    context.scale(density, density);
+
+    const points = [];
+    let previousEnd;
+    for (const group of strand.querySelectorAll('.beads')) {
+      const rows = [...group.querySelectorAll('.strand-row')];
+      if (!rows.length) continue;
+
+      for (const [index, row] of rows.entries()) {
+        const rect = row.getBoundingClientRect();
+        const left = rect.left - area.left - 4;
+        const right = rect.right - area.left + 4;
+        const y = rect.top + rect.height / 2 - area.top;
+        const start = { x: index % 2 ? right : left, y };
+        const end = { x: index % 2 ? left : right, y };
+        if (index === 0 && previousEnd) {
+          const joinY = previousEnd.y + 14;
+          points.push({ x: previousEnd.x, y: joinY }, { x: left - 7, y: joinY }, { x: left - 7, y });
+        }
+        points.push(start, end);
+        previousEnd = end;
+      }
+    }
+    if (!points.length) return;
+
+    context.beginPath();
+    context.moveTo(points[0].x, points[0].y);
+    for (let index = 1; index < points.length - 1; index++) {
+      const point = points[index];
+      const next = points[index + 1];
+      context.arcTo(point.x, point.y, next.x, next.y, 5);
+    }
+    const last = points[points.length - 1];
+    context.lineTo(last.x, last.y);
+    context.lineJoin = 'round';
+    context.lineCap = 'round';
+    context.strokeStyle = '#b3896352';
+    context.lineWidth = 2.8;
+    context.stroke();
+    context.strokeStyle = '#846347';
+    context.lineWidth = 1.15;
+    context.stroke();
+  }
+
+  new ResizeObserver(drawCord).observe(byId('simStrand'));
+
+  function changeBeads(amount) {
+    beadCount = Math.max(0, Math.min(maxStartingBeads, beadCount + amount));
+    renderBeads(amount > 0);
+  }
+
+  wideStrand.addEventListener('change', () => renderBeads());
+  byId('addBead').addEventListener('click', () => changeBeads(1));
+  byId('removeBead').addEventListener('click', () => changeBeads(-1));
+  byId('resetBeads').addEventListener('click', () => changeBeads(-beadCount));
+
+  const correctAnswers = { total: 170, factor: 16, black: 102 };
+  byId('answerForm').addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (submitted) return;
+    submitted = true;
+    let correct = 0;
+    const incorrect = [];
+    for (const [index, [name, answer]] of Object.entries(correctAnswers).entries()) {
+      const input = event.currentTarget.elements[name];
+      const matches = Number(input.value) === answer;
+      if (matches) correct++;
+      else incorrect.push(index + 1);
+      input.dataset.result = matches ? 'yes' : 'no';
+      input.readOnly = true;
+    }
+    mode = 'simulator';
+    activePhrase = '';
+    beadCount = 2;
+    renderMode();
+    renderBeads();
+    byId('submit').hidden = true;
+    byId('restart').hidden = false;
+    const score = correct === 3 ? 'Všechny tři odpovědi jsou správně.' :
+      'Správně ' + correct + ' ze 3. Znovu prozkoumej ' +
+      (incorrect.length === 1 ? 'otázku ' : 'otázky ') + incorrect.join(', ') + '.';
+    byId('feedback').textContent = score + ' Teď můžeš výsledek prozkoumat v simulátoru.';
+    byId('feedback').hidden = false;
+    byId('feedback').focus();
+  });
+
+  byId('restart').addEventListener('click', () => {
+    const form = byId('answerForm');
+    form.reset();
+    for (const name of Object.keys(correctAnswers)) {
+      form.elements[name].readOnly = false;
+      delete form.elements[name].dataset.result;
+    }
+    submitted = false;
+    renderBeads();
+    byId('feedback').hidden = true;
+    byId('restart').hidden = true;
+    byId('submit').hidden = false;
+    form.elements.total.focus();
+  });
+
+  renderMode();
+  renderBeads();
+</script>
+</body>
+</html>

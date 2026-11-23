@@ -9,9 +9,9 @@
 <meta name="theme-color" content="#4a3aa7">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<meta name="description" content="Malé aplikace na procvičování matematiky – násobilka a mapa toho, co už jde samo.">
+<meta name="description" content="Procvičuj násobilku a slovní úlohy z přijímaček.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Matika – násobilka a mapa toho, co už umím">
+<meta property="og:title" content="Matika – násobilka a slovní úlohy">
 <meta property="og:description" content="Malé aplikace na procvičování matematiky pro každé dítě zvlášť.">
 <meta property="og:image" content="https://jcepl.github.io/matika/icons/og.png">
 <meta property="og:image:width" content="1200">
@@ -37,8 +37,7 @@
   .app svg { width: 64px; height: 64px; flex: none; border-radius: 10px; background: var(--accent); padding: 4px; }
   .app h3 { margin: 0 0 2px; font-size: 1.2rem; }
   .app p { margin: 0; color: var(--ink-2); font-size: .95rem; }
-  .app.soon { opacity: .55; border-style: dashed; box-shadow: none; }
-  .app.soon .ico { width: 64px; height: 64px; flex: none; border-radius: 10px; background: var(--none); color: var(--on-none); display: grid; place-items: center; font-weight: 800; }
+  .app .ico { width: 64px; height: 64px; flex: none; border-radius: 10px; background: #eee8ff; color: var(--accent); display: grid; place-items: center; font-size: 1.6rem; font-weight: 800; }
   .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: space-between; margin-top: 8px; }
   .row .btn { min-height: 44px; }
   .msg { color: var(--ink-2); min-height: 1.5em; }
@@ -67,8 +66,8 @@
       'u.linked': 'Zařízení je připojené.',
       'app.nasobilka': 'Násobilka',
       'app.nasobilka.d': 'Procvič si násobení a uvidíš, co už ti jde samo.',
-      'app.more': 'Další aplikace',
-      'app.more.d': 'Připravujeme.',
+      'app.words': 'Slovní úlohy',
+      'app.words.d': 'Čtyři úlohy z přijímaček se simulátory a schématy.',
       'st.good': 'Jde samo', 'st.warn': 'Skoro', 'st.bad': 'Trénovat', 'st.none': 'Nevyzkoušeno',
       'u.lang': 'English',
     },
@@ -86,8 +85,8 @@
       'u.linked': 'This device is connected.',
       'app.nasobilka': 'Times tables',
       'app.nasobilka.d': 'Practise multiplication and see what is already automatic.',
-      'app.more': 'More apps',
-      'app.more.d': 'Coming later.',
+      'app.words': 'Word problems',
+      'app.words.d': 'Four Czech entrance exam problems with interactive models and diagrams.',
       'st.good': 'Automatic', 'st.warn': 'Almost', 'st.bad': 'Practise', 'st.none': 'Not tried',
       'u.lang': 'Čeština',
     },
@@ -143,7 +142,7 @@
         </div>` : ''}
         <h2>${t('u.apps')}</h2>
         <a class="app" href="nasobilka/index.html">${lattice(7, 8)}<div><h3>${t('app.nasobilka')}</h3><p>${t('app.nasobilka.d')}</p></div></a>
-        <div class="app soon"><span class="ico">+ − ÷</span><div><h3>${t('app.more')}</h3><p>${t('app.more.d')}</p></div></div>
+        <a class="app" href="slovni-ulohy/index.html"><span class="ico" aria-hidden="true">?</span><div><h3>${t('app.words')}</h3><p>${t('app.words.d')}</p></div></a>
         <div class="row">
           <button class="btn ghost" id="notMe">${t('u.notMe', { name: M.esc(me.name) })}</button>
           <button class="btn ghost" id="lang">${t('u.lang')}</button>

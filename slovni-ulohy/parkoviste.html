@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parkoviště · Matika</title>
+<style>
+  :root {
+    color-scheme: light;
+    --ink: #243336; --muted: #4e6263; --line: #d4ded8; --purple: #185755;
+    --blue: #145769; --blue-bg: #dceff0; --rose: #69440b; --rose-bg: #f9e9c9;
+    --mint: #234f41; --mint-bg: #e3efe4; --paper: #f1f4ee; --asphalt: #343e42;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: radial-gradient(ellipse at 75% 0, #e1ebe3, transparent 65%), var(--paper); color: var(--ink); font: 1rem/1.5 ui-rounded, system-ui, sans-serif; }
+  h1, h2, p { margin: 0; }
+  button, input { font: inherit; }
+  button { cursor: pointer; }
+  button:disabled { cursor: default; opacity: .5; }
+  :is(button, input, a):focus-visible { outline: 3px solid #178278; outline-offset: 3px; }
+  header { background: #fafcf8; border-bottom: 1px solid var(--line); }
+  .top, main { width: min(1120px, calc(100% - 2rem)); margin-inline: auto; }
+  .top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem; padding: .65rem 0; }
+  .brand { font-weight: 850; letter-spacing: -.035em; }
+  .task-nav { display: flex; align-items: center; flex-wrap: wrap; gap: .2rem; }
+  .task-nav a { display: inline-flex; align-items: center; min-height: 44px; padding-inline: .6rem; color: var(--purple); border-radius: .55rem; font-weight: 700; text-decoration: none; }
+  .task-nav a[aria-current] { background: #dcece6; }
+  .task-nav a:hover { text-decoration: underline; }
+  main { padding-block: 1.65rem 2.75rem; }
+  h1 { font-size: clamp(2.5rem, 6.4vw, 4rem); line-height: 1.03; letter-spacing: -.07em; }
+  h2 { font-size: 1.22rem; line-height: 1.25; letter-spacing: -.025em; }
+  .hero { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .75rem; align-items: center; }
+  .hero p { margin-top: .35rem; color: var(--muted); }
+  .p-sign { display: grid; width: clamp(2.8rem, 8vw, 4.25rem); aspect-ratio: 1; place-items: center; background: #155866; color: #fff; border: 3px solid #fff; border-radius: .7rem; box-shadow: 0 0 0 1px #155866, 0 4px 0 #16484b2d; font: 850 clamp(1.7rem, 5vw, 2.9rem)/1 system-ui, sans-serif; }
+  .modes { display: inline-flex; flex-wrap: wrap; gap: .18rem; margin: 1rem 0; padding: .2rem; border: 1px solid var(--line); border-radius: .85rem; background: #e4ece5; }
+  .modes button { min-height: 44px; padding: .35rem .65rem; border: 0; border-radius: .6rem; color: var(--muted); background: transparent; font-weight: 750; }
+  .modes button[aria-pressed="true"] { color: var(--purple); background: #fff; box-shadow: 0 1px 3px #26392c22; }
+  .layout { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.12fr); align-items: start; gap: 1rem; }
+  .layout.solo { grid-template-columns: minmax(0, 670px); }
+  .stack { display: grid; gap: 1rem; }
+  .card { min-width: 0; padding: clamp(.85rem, 3vw, 1.3rem); border: 1px solid var(--line); border-radius: 1.05rem; background: #fff; box-shadow: 0 4px 16px #26392c10; }
+  .problem p, .answer p { margin-top: .65rem; }
+  .problem .question { font-weight: 780; }
+  .problem summary { cursor: pointer; font-size: 1.15rem; font-weight: 790; }
+  .problem summary::marker { color: var(--purple); }
+  .problem summary:focus-visible { outline: 3px solid #178278; outline-offset: 3px; }
+  .mark { border-radius: .26rem; padding: .05em .14em; }
+  .mark.space { background: #f9eed7; color: #6d4b13; }
+  .mark.bus { background: var(--rose-bg); color: var(--rose); }
+  .mark.ratio { background: var(--mint-bg); color: var(--mint); }
+  .solo .mark { color: inherit; background: none; padding: 0; }
+  .actions { display: flex; align-items: center; flex-wrap: wrap; gap: .48rem; margin-top: .65rem; }
+  .button { min-height: 44px; padding: .42rem .7rem; border: 1px solid #cadbd3; border-radius: .58rem; color: var(--purple); background: #f5faf6; font-weight: 740; }
+  .button.primary { background: var(--purple); border-color: var(--purple); color: #fff; }
+  .button.swap { background: var(--rose-bg); border-color: #e7cf9e; color: var(--rose); }
+  .instruction { color: var(--muted); margin-top: .38rem; }
+  .stats { margin: .75rem 0 .45rem; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .3rem; }
+  .stats div { min-width: 0; background: #f6f8f4; padding: .38rem .48rem; border-radius: .58rem; }
+  .stats .cars-stat { background: var(--blue-bg); color: var(--blue); }
+  .stats .buses-stat { background: var(--rose-bg); color: var(--rose); }
+  .stats .usage { background: #f9eed7; }
+  .stats .ratio-stat { background: var(--mint-bg); color: var(--mint); }
+  .stats dt { font-size: .76rem; font-weight: 690; }
+  .stats dd { margin: 0; font-size: clamp(.92rem, 2.65vw, 1.22rem); font-weight: 820; font-variant-numeric: tabular-nums; }
+  .goal { color: var(--muted); font-size: .89rem; min-height: 1.4rem; }
+  .goal.matched { color: var(--mint); font-weight: 750; }
+  .lot {
+    --paint: #e7e5d9;
+    display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 0 .18rem;
+    margin-top: .55rem; padding: .36rem;
+    border-radius: .85rem; border: 4px solid #b8c5ba;
+    background: radial-gradient(circle, #e8eadd26 .55px, transparent .9px) 0 0 / 6px 7px,
+                radial-gradient(circle, #17252b8c .5px, transparent .9px) 2px 1px / 8px 9px,
+                var(--asphalt);
+    box-shadow: inset 0 0 0 1px #232e32, 0 2px 0 #c4cec5;
+  }
+  .bay, .single {
+    min-width: 0; min-height: 40px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); place-items: center;
+    position: relative; isolation: isolate; padding: .18rem .1rem;
+    border: 1px solid var(--paint); border-radius: .06rem;
+    background: repeating-linear-gradient(to right, transparent 0 calc(25% - 1px), #e7e5d9bc calc(25% - 1px) 25%), #39454a;
+  }
+  .bay { grid-column: span 4; }
+  .bay:hover { background-color: #46565c; }
+  .bay.recent { z-index: 1; outline: 2px solid #9cf2d8; outline-offset: -2px; }
+  .bay:focus-visible { z-index: 2; outline-color: #cfffe9; outline-offset: 2px; }
+  .drive-lane {
+    grid-column: 1 / -1; position: relative; min-height: .78rem;
+    display: grid; place-items: center;
+    color: #f0e9d7; background: #26323770; font-size: .78rem; line-height: 1;
+  }
+  .drive-lane::before {
+    content: ''; position: absolute; inset: 50% .45rem auto; height: 1px;
+    background: repeating-linear-gradient(90deg, #e9e4d294 0 12px, transparent 12px 24px);
+  }
+  .drive-lane span { position: relative; padding-inline: .38rem; background: #303b40; }
+  .lot-entry {
+    grid-column: 1 / -1; display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: .18rem;
+    align-items: center; padding: .18rem .05rem .38rem; color: #fff9e8;
+  }
+  .entry-road {
+    grid-column: 1 / -1; position: relative; display: flex; align-items: center; justify-content: space-between;
+    min-height: 2.2rem; margin-inline: .1rem .3rem; padding-inline: .42rem;
+    border-inline: 2px solid #e2e1cf; font-size: .81rem; font-weight: 780; letter-spacing: .09em;
+  }
+  .entry-road::after {
+    content: ''; width: 1.7rem; height: 1.1rem;
+    background: repeating-linear-gradient(90deg, #eee9d6 0 3px, transparent 3px 6px);
+    opacity: .82;
+  }
+  .single { grid-template-columns: 1fr; grid-column: span 1; background: #39454a; }
+  .vehicle {
+    display: block; position: relative; isolation: isolate; border: 1px solid;
+    filter: drop-shadow(1px 2px 1px #071116c9); pointer-events: none;
+  }
+  .vehicle .glass, .vehicle .trim { position: absolute; display: block; pointer-events: none; }
+  .vehicle.bus {
+    grid-column: 1 / -1; width: calc(100% - .55rem); height: 1.69rem;
+    border-color: #684312; border-radius: .3rem .62rem .57rem .34rem;
+    background: linear-gradient(#b76c26 0 16%, #e9a646 16% 30%, #f1ba60 31% 63%, #d78a32 64% 86%, #a16422 87%);
+  }
+  .vehicle.bus .glass {
+    inset: .19rem .18rem .19rem .38rem; border-radius: .17rem .36rem .32rem .14rem;
+    background:
+      linear-gradient(100deg, #54757c, #81afb0 52%, #2e4c57) right center / .43rem 100% no-repeat,
+      repeating-linear-gradient(90deg,#284454 0 9%,#699096 9% 11%,#d79742 11% 14%) left top / calc(100% - .57rem) .24rem no-repeat,
+      repeating-linear-gradient(90deg,#284454 0 9%,#60828a 9% 11%,#ba7330 11% 14%) left bottom / calc(100% - .57rem) .2rem no-repeat,
+      linear-gradient(90deg, #bd7b35 0 28%, #f2c878 28% 67%, #c38b42 67% 69%, transparent 69%) 38% 50% / 39% .18rem no-repeat;
+  }
+  .vehicle.bus .trim {
+    inset: -.13rem .62rem; z-index: -1;
+    background: linear-gradient(#182027,#182027) left .43rem top / .44rem .24rem no-repeat,
+                linear-gradient(#182027,#182027) right .38rem top / .44rem .24rem no-repeat,
+                linear-gradient(#182027,#182027) left .43rem bottom / .44rem .24rem no-repeat,
+                linear-gradient(#182027,#182027) right .38rem bottom / .44rem .24rem no-repeat;
+  }
+  .vehicle.bus::after {
+    content: ''; position: absolute; inset: .2rem .05rem .2rem .07rem;
+    background: linear-gradient(#fff4c2,#fff4c2) right top / .14rem .2rem no-repeat,
+                linear-gradient(#fff4c2,#fff4c2) right bottom / .14rem .2rem no-repeat,
+                linear-gradient(#a43832,#a43832) left top / .11rem .18rem no-repeat,
+                linear-gradient(#a43832,#a43832) left bottom / .11rem .18rem no-repeat;
+  }
+  .vehicle.car {
+    width: min(73%, 1.47rem); height: 2.08rem;
+    border-color: #214656; border-radius: .47rem .45rem .35rem .35rem;
+    background: linear-gradient(90deg,#317583,#69a8ae 22%,#83bec4 49%,#5aa1ac 76%,#28616e);
+  }
+  .vehicle.car .glass {
+    inset: .36rem .17rem .31rem; border-radius: .29rem .29rem .2rem .2rem;
+    background: linear-gradient(165deg,#c8e3de 0 10%,#5e848e 14%,#274957 36%,#629da7 38% 69%,#315463 72% 93%,#16414e 100%);
+  }
+  .vehicle.car .trim {
+    inset: .33rem -.15rem .26rem; z-index: -1;
+    background: linear-gradient(#151e24,#151e24) left top / .23rem .41rem no-repeat,
+                linear-gradient(#151e24,#151e24) right top / .23rem .41rem no-repeat,
+                linear-gradient(#151e24,#151e24) left bottom / .23rem .41rem no-repeat,
+                linear-gradient(#151e24,#151e24) right bottom / .23rem .41rem no-repeat;
+  }
+  .vehicle.car::after {
+    content: ''; position: absolute; inset: .08rem .1rem;
+    background: linear-gradient(#faefbf,#faefbf) left top / .22rem .12rem no-repeat,
+                linear-gradient(#faefbf,#faefbf) right top / .22rem .12rem no-repeat,
+                linear-gradient(#963f3d,#963f3d) left bottom / .22rem .12rem no-repeat,
+                linear-gradient(#963f3d,#963f3d) right bottom / .22rem .12rem no-repeat;
+  }
+  .capacity { margin: .55rem 0 .7rem; }
+  .capacity-bar { display: grid; grid-template-columns: repeat(26, minmax(0, 1fr)) minmax(6px, .25fr); gap: 1px; }
+  .capacity-bar span { min-height: .48rem; background: #b77724; }
+  .capacity-bar span:first-child { border-radius: .2rem 0 0 .2rem; }
+  .capacity-bar span:last-child { background: #94c6c9; border-radius: 0 .2rem .2rem 0; }
+  .capacity figcaption { display: flex; justify-content: space-between; gap: .28rem .65rem; margin-top: .26rem; font-size: .79rem; line-height: 1.25; color: var(--muted); }
+  .capacity figcaption strong { display: block; font-size: .92rem; color: var(--ink); }
+  .capacity figcaption span:last-child { text-align: right; }
+  .schema-step { font-size: .92rem; font-weight: 790; }
+  .exchange { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: .3rem; margin: .65rem 0; }
+  .exchange figure { min-width: 0; margin: 0; text-align: center; }
+  .exchange figcaption { font-size: .8rem; font-weight: 730; padding-bottom: .3rem; }
+  .exchange .bay { min-height: 34px; }
+  .exchange .vehicle.bus { height: 1rem; }
+  .exchange .vehicle.car { height: 1.25rem; width: min(70%, .85rem); }
+  .exchange .vehicle .glass { inset: .18rem .1rem; }
+  .exchange .vehicle.bus .glass { inset: .1rem .13rem; }
+  .exchange-arrow { color: var(--mint); font-size: 1.2rem; font-weight: 800; }
+  .exchange-note { border-radius: .48rem; padding: .38rem .55rem; background: #f9eed7; color: #604816; font-weight: 720; font-size: .9rem; }
+  .schema-prompt { margin-top: .55rem; color: var(--muted); font-size: .92rem; }
+  .answer input { width: 7.5rem; min-height: 44px; border: 1px solid #b9ccc4; border-radius: .55rem; background: #f9fcf8; padding: .3rem .55rem; }
+  .answer label { display: grid; gap: .42rem; margin-top: .68rem; }
+  #feedback { padding: .56rem .66rem; border-radius: .6rem; background: #e4f0e8; color: #204f43; }
+  @media (min-width: 821px) { .stack { position: sticky; top: 1rem; } .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  @media (max-width: 820px) {
+    .layout { grid-template-columns: minmax(0, 1fr); gap: .55rem; }
+    .stack { display: contents; }
+    .problem { order: 0; } #simulator, #schema { order: 1; } .answer { order: 2; }
+  }
+  @media (max-width: 520px) {
+    .top, main { width: calc(100% - 1rem); }
+    .top { padding: .22rem 0; }
+    .task-nav a { min-height: 38px; }
+    main { padding-block: .65rem 1.25rem; }
+    h1 { font-size: 2rem; }
+    .hero p { margin-top: .17rem; font-size: .76rem; }
+    .p-sign { width: 2.5rem; }
+    .modes { margin: .55rem 0; }
+    .modes button { min-height: 35px; padding: .25rem .53rem; font-size: .85rem; }
+    .card { padding: .65rem; }
+    .problem summary { font-size: 1.02rem; }
+    #simulator h2 { font-size: 1.03rem; }
+    #simulator .instruction { margin-top: .24rem; font-size: .86rem; }
+    .stats { margin: .45rem 0 .26rem; }
+    .stats div { padding: .24rem .28rem; }
+    .stats dt { font-size: .67rem; line-height: 1.15; }
+    .stats dd { margin-top: .11rem; font-size: .84rem; line-height: 1.18; }
+    .goal { min-height: 0; font-size: .77rem; }
+    #simulator .actions { margin-top: .38rem; gap: .28rem; }
+    #simulator .button { min-height: 34px; padding: .23rem .35rem; font-size: .76rem; }
+    .bay, .single { min-height: 35px; }
+    .drive-lane { min-height: .62rem; font-size: .65rem; }
+    .entry-road { min-height: 1.45rem; font-size: .72rem; }
+    .lot .vehicle.bus { width: calc(100% - .22rem); height: 1.13rem; }
+    .lot .vehicle.bus .glass { inset: .11rem .12rem; }
+    .lot .vehicle.bus .trim { inset: -.10rem .2rem; }
+    .lot .vehicle.car { height: 1.35rem; width: min(79%, .88rem); }
+    .lot .vehicle.car .glass { inset: .24rem .11rem .19rem; }
+    .lot .vehicle.car .trim { inset: .2rem -.11rem .18rem; }
+    .layout[data-mode="simulator"] .answer h2 { position: absolute; clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; white-space: nowrap; }
+    .layout[data-mode="simulator"] .answer form { display: flex; flex-wrap: wrap; align-items: end; gap: .35rem; }
+    .layout[data-mode="simulator"] .answer form label,
+    .layout[data-mode="simulator"] .answer .actions { margin-top: 0; }
+    .layout[data-mode="simulator"] .answer form label { gap: .15rem; font-size: .82rem; }
+    .layout[data-mode="simulator"] .answer input { width: 6rem; }
+    .layout[data-mode="simulator"] .answer .button { font-size: .83rem; }
+    .layout[data-mode="simulator"] .answer :is(input, button) { min-height: 37px; }
+  }
+  @media (max-width: 520px) and (max-height: 760px) {
+    .top { padding-block: 0; }
+    .task-nav a { min-height: 34px; }
+    main { padding-top: .42rem; }
+    .hero p { margin-top: .08rem; }
+    h1 { font-size: 1.75rem; }
+    .p-sign { width: 2.18rem; }
+    .modes { margin: .32rem 0; }
+    .modes button { min-height: 33px; }
+    .layout { gap: .4rem; }
+    .card { padding: .48rem; }
+    .lot { padding: .24rem; border-width: 3px; margin-top: .38rem; }
+    .lot .bay { min-height: 28px; }
+    .lot .entry-road { min-height: 1.3rem; }
+    .drive-lane { min-height: .55rem; }
+    .lot .vehicle.car { height: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+<header><div class="top">
+  <div class="brand">Matika</div>
+  <nav class="task-nav" aria-label="Úlohy"><a href="index.html">Slovní úlohy</a><a href="koralky.html">Korálky</a><a href="parkoviste.html" aria-current="page">Parkoviště</a><a href="deti-v-dome.html">Děti v domě</a><a href="stejna-kniha.html">Stejná kniha</a></nav>
+</div></header>
+<main>
+  <div class="hero"><span class="p-sign" aria-hidden="true">P</span><div><h1>Parkoviště</h1><p>CERMAT · 2023 · 2. náhradní termín · úloha 11</p></div></div>
+  <div class="modes" role="group" aria-label="Zobrazení úlohy">
+    <button type="button" data-mode="simulator" aria-pressed="true">Simulátor</button>
+    <button type="button" data-mode="schema" aria-pressed="false">Schéma</button>
+    <button type="button" data-mode="solo" aria-pressed="false">Bez pomůcek</button>
+  </div>
+  <div class="layout" id="layout">
+    <div class="stack">
+      <details class="card problem" id="problem" open>
+        <summary>Zadání</summary>
+        <p>Na parkovišti je <span class="mark space">105 míst pro osobní auta</span>. Jeden autobus zabere <span class="mark bus">čtyři taková místa</span>. Parkoviště je plné a osobních aut je <span class="mark ratio">třikrát tolik co autobusů</span>.</p>
+        <p class="question">O kolik je na parkovišti více osobních aut než autobusů?</p>
+      </details>
+      <section class="card answer" aria-labelledby="answer-title">
+        <h2 id="answer-title">Tvoje odpověď</h2>
+        <form id="answerForm">
+          <label>O kolik více <input name="difference" type="number" min="0" step="1" inputmode="numeric" required></label>
+          <div class="actions">
+            <button class="button primary" id="submit" type="submit">Odevzdat odpověď</button>
+            <button class="button" id="restart" type="button" hidden>Zkusit znovu</button>
+          </div>
+        </form>
+        <p id="feedback" tabindex="-1" hidden></p>
+      </section>
+    </div>
+    <section class="card" id="simulator" aria-labelledby="sim-title">
+      <h2 id="sim-title">Zkus si sám</h2>
+      <p class="instruction">Klepnutím vyměníš autobus za čtyři auta a zpět.</p>
+      <dl class="stats" aria-live="polite" aria-atomic="true">
+        <div class="cars-stat"><dt>Osobní auta</dt><dd id="cars"></dd></div>
+        <div class="buses-stat"><dt>Autobusy</dt><dd id="buses"></dd></div>
+        <div class="usage"><dt>Obsazeno</dt><dd id="occupied"></dd></div>
+        <div class="ratio-stat"><dt>Auta : autobusy</dt><dd id="ratio"></dd></div>
+      </dl>
+      <p class="goal" id="goal"></p>
+      <div class="actions">
+        <button type="button" class="button swap" id="swapBus">Autobus za auta</button>
+        <button type="button" class="button" id="swapCars">Auta za autobus</button>
+        <button type="button" class="button" id="resetLot">Obnovit</button>
+      </div>
+      <div class="lot" id="lot" role="group" aria-label="Parkoviště se 105 místy"></div>
+    </section>
+    <section class="card" id="schema" aria-labelledby="schema-title" hidden>
+      <h2 id="schema-title">Kolik autobusů se vejde?</h2>
+      <figure class="capacity">
+        <div class="capacity-bar" id="capacityBar" aria-hidden="true"></div>
+        <figcaption>
+          <span><strong>26 autobusů</strong>26 × 4 = 104 míst</span>
+          <span><strong>1 auto</strong>poslední místo ze 105</span>
+        </figcaption>
+      </figure>
+      <p class="schema-step">Jedna výměna</p>
+      <div class="exchange">
+        <figure><figcaption>−1 autobus</figcaption><div class="bay" id="schemaBus" aria-hidden="true"></div></figure>
+        <span class="exchange-arrow" aria-hidden="true">↔</span>
+        <figure><figcaption>+4 auta</figcaption><div class="bay" id="schemaCars" aria-hidden="true"></div></figure>
+      </div>
+      <p class="exchange-note">Obsazenost je pořád 105 míst.</p>
+      <p class="schema-prompt">Kolikrát výměnu zopakuješ, aby aut bylo třikrát tolik co autobusů?</p>
+    </section>
+  </div>
+</main>
+<script>
+  const byId = (id) => document.getElementById(id);
+  const capacity = 105;
+  const placesPerBus = 4;
+  const bayCount = Math.floor(capacity / placesPerBus);
+  const baysPerRow = 4;
+  const compact = matchMedia('(max-width: 520px)');
+  const targetCarsPerBus = 3;
+  const expectedBusCount = capacity / (placesPerBus + targetCarsPerBus);
+  const expectedDifference = expectedBusCount * (targetCarsPerBus - 1);
+  const bays = Array(bayCount).fill(true);
+  const lot = byId('lot');
+  const modes = [...document.querySelectorAll('[data-mode]')];
+  const bayButtons = [];
+
+  function makeVehicle(kind) {
+    const vehicle = document.createElement('span');
+    vehicle.className = 'vehicle ' + kind;
+    vehicle.setAttribute('aria-hidden', 'true');
+    for (const detail of ['trim', 'glass']) {
+      const part = document.createElement('span');
+      part.className = detail;
+      vehicle.append(part);
+    }
+    return vehicle;
+  }
+
+  const capacityBar = byId('capacityBar');
+  for (let index = 0; index <= bayCount; index++) {
+    capacityBar.append(document.createElement('span'));
+  }
+  byId('schemaBus').append(makeVehicle('bus'));
+  byId('schemaCars').append(...Array.from({ length: placesPerBus }, () => makeVehicle('car')));
+
+  const entry = document.createElement('div');
+  entry.className = 'lot-entry';
+  const road = document.createElement('div');
+  road.className = 'entry-road';
+  road.textContent = 'VJEZD';
+  const single = document.createElement('div');
+  single.className = 'single';
+  single.setAttribute('aria-label', 'Samostatné místo s jedním autem');
+  single.append(makeVehicle('car'));
+  entry.append(road);
+  lot.append(entry);
+
+  for (let index = 0; index < bayCount; index++) {
+    if (index > 0 && index % (baysPerRow * 2) === 0) {
+      const lane = document.createElement('div');
+      lane.className = 'drive-lane';
+      lane.setAttribute('aria-hidden', 'true');
+      const direction = document.createElement('span');
+      direction.textContent = index % (baysPerRow * 4) === 0 ? '←' : '→';
+      lane.append(direction);
+      lot.append(lane);
+    }
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'bay';
+    button.addEventListener('click', () => swap(index));
+    bayButtons.push(button);
+    lot.append(button);
+  }
+  lot.append(single);
+
+  function setMode(mode) {
+    byId('simulator').hidden = mode !== 'simulator';
+    byId('schema').hidden = mode !== 'schema';
+    byId('layout').classList.toggle('solo', mode === 'solo');
+    byId('layout').dataset.mode = mode;
+    byId('problem').open = mode !== 'simulator' || !compact.matches;
+    for (const button of modes) {
+      button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+    }
+  }
+
+  for (const button of modes) {
+    button.addEventListener('click', () => setMode(button.dataset.mode));
+  }
+
+  function describeBay(index) {
+    const row = Math.floor(index / baysPerRow) + 1;
+    const block = index % baysPerRow + 1;
+    const action = bays[index] ? 'Vyměnit autobus za čtyři auta' : 'Vyměnit čtyři auta za autobus';
+    return action + ', řada ' + row + ', blok ' + block;
+  }
+
+  function renderLot(changedIndex = -1) {
+    let buses = 0;
+    let cars = 1;
+    for (const [index, isBus] of bays.entries()) {
+      const button = bayButtons[index];
+      button.setAttribute('aria-label', describeBay(index));
+      button.classList.toggle('recent', index === changedIndex);
+      if (button.dataset.vehicle !== String(isBus)) {
+        const vehicles = isBus ? [makeVehicle('bus')] : Array.from({ length: placesPerBus }, () => makeVehicle('car'));
+        button.replaceChildren(...vehicles);
+        button.dataset.vehicle = String(isBus);
+      }
+      if (isBus) buses++;
+      else cars += placesPerBus;
+    }
+    byId('cars').textContent = cars;
+    byId('buses').textContent = buses;
+    byId('occupied').textContent = (cars + buses * placesPerBus) + ' / ' + capacity;
+    byId('ratio').textContent = cars + ' : ' + buses;
+    const matches = buses > 0 && cars === targetCarsPerBus * buses;
+    byId('goal').textContent = matches ? 'Poměr sedí. Na každý autobus připadají tři auta.' : 'Hledej stav, kdy je aut třikrát tolik co autobusů.';
+    byId('goal').classList.toggle('matched', matches);
+    byId('swapBus').disabled = buses === 0;
+    byId('swapCars').disabled = buses === bayCount;
+    byId('resetLot').disabled = buses === bayCount;
+  }
+
+  function swap(index) {
+    bays[index] = !bays[index];
+    renderLot(index);
+  }
+
+  function swapRandom(isBus) {
+    const eligible = bays.flatMap((current, index) => current === isBus ? [index] : []);
+    if (eligible.length) swap(eligible[Math.floor(Math.random() * eligible.length)]);
+  }
+
+  byId('swapBus').addEventListener('click', () => swapRandom(true));
+  byId('swapCars').addEventListener('click', () => swapRandom(false));
+  byId('resetLot').addEventListener('click', () => {
+    bays.fill(true);
+    renderLot();
+  });
+
+  const form = byId('answerForm');
+  const answer = form.elements.difference;
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (answer.readOnly) return;
+    const correct = Number(answer.value) === expectedDifference;
+    answer.readOnly = true;
+    byId('submit').hidden = true;
+    byId('restart').hidden = false;
+    const feedback = byId('feedback');
+    feedback.textContent = correct ? 'Správně. V simulátoru si můžeš prohlédnout stav ze zadání.' :
+      'Zkus porovnat počet aut a autobusů v připraveném parkovišti.';
+    feedback.hidden = false;
+    bays.fill(true);
+    bays.fill(false, 0, bayCount - expectedBusCount);
+    setMode('simulator');
+    renderLot();
+    feedback.focus();
+  });
+
+  byId('restart').addEventListener('click', () => {
+    form.reset();
+    answer.readOnly = false;
+    byId('submit').hidden = false;
+    byId('restart').hidden = true;
+    byId('feedback').hidden = true;
+    bays.fill(true);
+    renderLot();
+    answer.focus();
+  });
+
+  setMode('simulator');
+  renderLot();
+</script>
+</body>
+</html>
